@@ -997,13 +997,13 @@
             <input class="mat-input" id="a22" value="3">
           </div>
         </div>
-        <button class="btn" onclick="computeSVD()">
+        <button class="btn" id="btnDecompose">
           ⚡ Decompose
         </button>
       </div>
 
-      <div id="svd-output" class="svd-result" style="display:none;"></div>
-      <div id="svd-check" style="margin-top:16px; font-family:'Space Mono',monospace; font-size:12px; color:var(--accent4); display:none;"></div>
+      <div id="svd-output" class="svd-result"></div>
+      <div id="svd-check" style="margin-top:16px; font-family:'Space Mono',monospace; font-size:12px; color:var(--accent4);"></div>
     </div>
   </div>
 </section>
@@ -1034,7 +1034,7 @@
       <div class="interact-sub">See how much information each component captures</div>
       <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
         <input id="sigmaInput" class="mat-input" style="max-width:320px; font-size:13px; text-align:left; padding:12px 16px;" placeholder="Enter singular values e.g: 4, 2, 0.5" value="4, 2, 0.5">
-        <button class="btn" onclick="calcVariance()">Calculate</button>
+        <button class="btn" id="btnVariance">Calculate</button>
       </div>
       <div id="variance-out"></div>
     </div>
@@ -1286,7 +1286,6 @@ function computeSVD() {
   const pct2 = (s2*s2/(s1*s1+s2*s2)*100).toFixed(1);
 
   const out = document.getElementById('svd-output');
-  out.style.display = 'grid';
   out.innerHTML = `
     <div class="result-panel" style="border-color:rgba(124,106,247,0.3)">
       <div class="result-label" style="color:var(--accent1);">U — Left Vectors</div>
@@ -1316,6 +1315,14 @@ function computeSVD() {
   chk.style.display = 'block';
   chk.innerHTML = `✓ SVD complete — σ₁=${fmt(s1)}, σ₂=${fmt(s2)} | First component explains ${pct1}% of variance`;
 }
+// Wire up buttons with addEventListener (onclick blocked in sandboxed HTML)
+document.getElementById('btnDecompose').addEventListener('click', computeSVD);
+
+// Also recompute live as user types
+['a11','a12','a21','a22'].forEach(id => {
+  document.getElementById(id).addEventListener('input', computeSVD);
+});
+
 computeSVD(); // run on load
 
 // ─── VARIANCE CALCULATOR ───
@@ -1349,6 +1356,10 @@ function calcVariance() {
   html += `</div>`;
   document.getElementById('variance-out').innerHTML = html;
 }
+
+// Wire up variance button + live input
+document.getElementById('btnVariance').addEventListener('click', calcVariance);
+document.getElementById('sigmaInput').addEventListener('input', calcVariance);
 calcVariance();
 </script>
 </body>
