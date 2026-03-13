@@ -639,7 +639,117 @@
     letter-spacing: 1px;
   }
 
-  /* ─── RESPONSIVE ─── */
+  /* ─── CATEGORY FILTER BUTTONS ─── */
+  .cat-btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 10px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px; font-weight: 700;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .cat-btn:hover { border-color: var(--accent1); color: #fff; }
+  .cat-btn.active { background: var(--accent1); border-color: var(--accent1); color: #fff; box-shadow: 0 4px 16px var(--glow1); }
+
+  /* ─── NEW APP CARDS ─── */
+  .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+
+  .app-card2 {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.25s, border-color 0.3s, box-shadow 0.3s;
+    display: flex; flex-direction: column;
+  }
+  .app-card2:hover {
+    transform: translateY(-5px);
+    border-color: var(--ac);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px var(--ac);
+  }
+  .app-card2.hidden { display: none; }
+
+  .app-card2-header {
+    padding: 20px 22px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .app2-icon { font-size: 30px; }
+
+  .app2-cat {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 100px;
+    letter-spacing: 0.5px;
+  }
+
+  .app2-body { padding: 20px 22px 22px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+
+  .app2-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 19px; font-weight: 800;
+    color: #ffffff; line-height: 1.2;
+  }
+
+  .app2-desc {
+    color: var(--text2);
+    font-size: 14px; font-weight: 500;
+    line-height: 1.75;
+    flex: 1;
+  }
+
+  /* How-it-works steps inside card */
+  .app2-how { display: flex; flex-direction: column; gap: 6px; margin: 4px 0; }
+  .how-step {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 13px; color: var(--text2); font-weight: 500; line-height: 1.5;
+  }
+  .how-num {
+    min-width: 22px; height: 22px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; font-weight: 800;
+    color: var(--ac);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* Mini demo area inside card */
+  .app2-demo {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .demo-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--ac);
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+
+  .app2-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; font-weight: 700;
+    color: var(--ac);
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 8px 12px;
+    letter-spacing: 0.5px;
+    margin-top: auto;
+  }
+
+
   @media(max-width: 600px) {
     .matrix-eq { gap: 10px; }
     .matrix-cell { width: 38px; height: 32px; font-size: 11px; }
@@ -1058,47 +1168,259 @@
 <section id="applications">
   <div class="reveal">
     <div class="sec-label">Section 06</div>
-    <h2 class="sec-title">Where SVD is Used</h2>
-    <p class="sec-body">SVD shows up everywhere in data science, machine learning, and engineering.</p>
+    <h2 class="sec-title">Cool Applications of SVD</h2>
+    <p class="sec-body">SVD is one of the most versatile tools in all of science and engineering. Here are 12 real, buildable applications — from AI art to finance to space exploration.</p>
 
-    <div class="app-grid">
-      <div class="app-card" style="--ac:var(--accent1);">
-        <div class="app-icon">🖼️</div>
-        <div class="app-name">Image Compression</div>
-        <div class="app-desc">A 1000×1000 image becomes three smaller matrices. Keep top-50 singular values → 95% visual quality at 10% storage.</div>
-        <div class="app-tag">// numpy.linalg.svd(image)</div>
-      </div>
-      <div class="app-card" style="--ac:var(--accent2);">
-        <div class="app-icon">🎬</div>
-        <div class="app-name">Recommender Systems</div>
-        <div class="app-desc">Netflix, Spotify use SVD on user-item matrices to find hidden preference patterns. Missing ratings are predicted from low-rank structure.</div>
-        <div class="app-tag">// collaborative filtering</div>
-      </div>
-      <div class="app-card" style="--ac:var(--accent3);">
-        <div class="app-icon">📝</div>
-        <div class="app-name">NLP — Latent Semantic Analysis</div>
-        <div class="app-desc">SVD on document-term matrices finds hidden topics. "Car" and "automobile" become close in the topic space — even if they never co-occur.</div>
-        <div class="app-tag">// sklearn TruncatedSVD</div>
-      </div>
-      <div class="app-card" style="--ac:var(--accent4);">
-        <div class="app-icon">🔇</div>
-        <div class="app-name">Noise Reduction</div>
-        <div class="app-desc">Noise hides in small singular values. Discard them and the signal becomes cleaner. Used in medical imaging, audio, sensor data.</div>
-        <div class="app-tag">// EEG / ECG denoising</div>
-      </div>
-      <div class="app-card" style="--ac:var(--accent5);">
-        <div class="app-icon">📊</div>
-        <div class="app-name">PCA — Dimensionality Reduction</div>
-        <div class="app-desc">PCA is literally SVD on the centered data matrix. sklearn's PCA uses SVD internally — it's more numerically stable than the covariance approach.</div>
-        <div class="app-tag">// sklearn.decomposition.PCA</div>
-      </div>
-      <div class="app-card" style="--ac:#ffd700;">
-        <div class="app-icon">🔬</div>
-        <div class="app-name">Pseudoinverse (Pinv)</div>
-        <div class="app-desc">SVD gives the Moore-Penrose pseudoinverse: A⁺ = V × Σ⁺ × Uᵀ. Used to solve least-squares problems even when A is not invertible.</div>
-        <div class="app-tag">// numpy.linalg.pinv</div>
-      </div>
+    <!-- Category Filter -->
+    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:40px;" id="catFilters">
+      <button class="cat-btn active" data-cat="all">All (12)</button>
+      <button class="cat-btn" data-cat="vision">👁 Computer Vision</button>
+      <button class="cat-btn" data-cat="nlp">💬 NLP & Text</button>
+      <button class="cat-btn" data-cat="ml">🤖 Machine Learning</button>
+      <button class="cat-btn" data-cat="science">🔬 Science & Engineering</button>
+      <button class="cat-btn" data-cat="finance">💹 Finance</button>
     </div>
+
+    <div class="app-grid" id="appGrid">
+
+      <!-- 1 Image Compression -->
+      <div class="app-card2" data-cat="vision" style="--ac:#7c6af7;">
+        <div class="app-card2-header" style="background:linear-gradient(135deg,rgba(124,106,247,0.25),rgba(124,106,247,0.05));">
+          <span class="app2-icon">🖼️</span>
+          <span class="app2-cat" style="background:rgba(124,106,247,0.2);color:#7c6af7;">Computer Vision</span>
+        </div>
+        <div class="app2-body">
+          <div class="app2-name">Image Compression</div>
+          <div class="app2-desc">Decompose a grayscale image matrix with SVD. Keep only the top-k singular values and reconstruct a near-identical image at a fraction of the storage. JPEG-style compression from scratch.</div>
+          <div class="app2-demo">
+            <div class="demo-label">Compression Simulator</div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+              <span style="font-size:13px;color:var(--text2);">k =</span>
+              <input type="range" id="imgK" min="1" max="100" value="20" style="flex:1;min-width:100px;accent-color:#7c6af7;">
+              <span id="imgKval" style="font-family:'Space Mono',monospace;font-size:14px;font-weight:800;color:#7c6af7;min-width:60px;">k=20</span>
+            </div>
+            <div id="imgCompResult" style="margin-top:8px;font-family:'Space Mono',monospace;font-size:13px;color:var(--text2);"></div>
+          </div>
+          <div class="app2-tag">numpy.linalg.svd(image)</div>
+        </div>
+      </div>
+
+      <!-- 2 Face Recognition -->
+      <div class="app-card2" data-cat="vision" style="--ac:#3dd6f5;">
+        <div class="app-card2-header" style="background:linear-gradient(135deg,rgba(61,214,245,0.25),rgba(61,214,245,0.05));">
+          <span class="app2-icon">🧑</span>
+          <span class="app2-cat" style="background:rgba(61,214,245,0.2);color:#3dd6f5;">Computer Vision</span>
+        </div>
+        <div class="app2-body">
+          <div class="app2-name">Eigenfaces — Face Recognition</div>
+          <div class="app2-desc">Stack 1000 face images as rows of a matrix. SVD extracts "eigenfaces" — the principal face directions. Any new face is represented as a combination of these eigenfaces. The backbone of early facial recognition systems (AT&T, MIT).</div>
+          <div class="app2-how">
+            <div class="how-step"><span class="how-num">1</span> Build matrix: each row = flattened face image</div>
+            <div class="how-step"><span class="how-num">2</span> Center data, apply SVD → get U, Σ, Vᵀ</div>
+            <div class="how-step"><span class="how-num">3</span> Top-k rows of Vᵀ = the "eigenfaces"</div>
+            <div class="how-step"><span class="how-num">4</span> Project new face → nearest neighbor in eigenspace</div>
+          </div>
+          <div class="app2-tag">sklearn.decomposition.PCA on face matrix</div>
+        </div>
+      </div>
+
+      <!-- 3 Background Subtraction -->
+      <div class="app-card2" data-cat="vision" style="--ac:#f7a26a;">
+        <div class="app-card2-header" style="background:linear-gradient(135deg,rgba(247,162,106,0.25),rgba(247,162,106,0.05));">
+          <span class="app2-icon">🎥</span>
+          <span class="app2-cat" style="background:rgba(247,162,106,0.2);color:#f7a26a;">Computer Vision</span>
+        </div>
+        <div class="app2-body">
+          <div class="app2-name">Video Background Removal</div>
+          <div class="app2-desc">Stack video frames as columns of a matrix. SVD separates the static background (low-rank component, captured by large σ values) from moving foreground objects (sparse component). Used in surveillance, self-driving cars, and video compression.</div>
+          <div class="app2-how">
+            <div class="how-step"><span class="how-num">1</span> Matrix A = [frame₁ | frame₂ | ... | frameₙ]</div>
+            <div class="how-step"><span class="how-num">2</span> Low-rank part (k=1~5) = static background</div>
+            <div class="how-step"><span class="how-num">3</span> Residual = moving objects / foreground</div>
+          </div>
+          <div class="app2-tag">Robust PCA / RPCA algorithm</div>
+        </div>
+      </div>
+
+      <!-- 4 Netflix Recommender -->
+      <div class="app-card2" data-cat="ml" style="--ac:#6af7a2;">
+        <div class="app-card2-header" style="background:linear-gradient(135deg,rgba(106,247,162,0.25),rgba(106,247,162,0.05));">
+          <span class="app2-icon">🎬</span>
+          <span class="app2-cat" style="background:rgba(106,247,162,0.2);color:#6af7a2;">Machine Learning</span>
+        </div>
+        <div class="app2-body">
+          <div class="app2-name">Netflix-Style Recommender</div>
+          <div class="app2-desc">Build a user×movie ratings matrix (mostly empty). SVD fills the gaps by finding latent factors — hidden taste dimensions like "action lover", "indie fan". Predict any missing rating as the dot product of user and movie latent vectors.</div>
+          <div class="app2-demo">
+            <div class="demo-label">Ratings Matrix Demo (? = unknown)</div>
+            <div id="ratingsMatrix" style="font-family:'Space Mono',monospace;font-size:13px;line-height:2;color:var(--text2);"></div>
+          </div>
+          <div class="app2-tag">surprise library / matrix factorization</div>
+        </div>
+      </div>
+
+      <!-- 5 LSA -->
+      <div class="app-card2" data-cat="nlp" style="--ac:#f76a9a;">
+        <div class="app-card2-header" style="background:linear-gradient(135deg,rgba(247,106,154,0.25),rgba(247,106,154,0.05));">
+          <span class="app2-icon">📚</span>
+          <span class="app2-cat" style="background:rgba(247,106,154,0.2);color:#f76a9a;">NLP & Text</span>
+        </div>
+        <div class="app2-body">
+          <div class="app2-name">Latent Semantic Analysis (LSA)</div>
+          <div class="app2-desc">Build a term×document matrix. SVD finds semantic "topics" hiding beneath word co-occurrence patterns. Synonyms cluster together. "Car" and "automobile" become neighbours even if they never appear in the same doc. Powers search engines and document clustering.</div>
+          <div class="app2-how">
+            <div class="how-step"><span class="how-num">1</span> TF-IDF matrix: rows=words, cols=documents</div>
+            <div class="how-step"><span class="how-num">2</span> Apply TruncatedSVD with k=100~300 topics</div>
+            <div class="how-step"><span class="how-num">3</span> Query → project into topic space → cosine similarity</div>
+          </div>
+          <div class="app2-tag">gensim.models.LsiModel</div>
+        </div>
+      </div>
+
+      <!-- 6 Anomaly Detection -->
+      <div class="app-card2" data-cat="ml" style="--ac:#ffd700;">
+        <div class="app-card2-header" style="background:linear-gradient(135deg,rgba(255,215,0,0.25),rgba(255,215,0,0.05));">
+          <span class="app2-icon">🚨</span>
+          <span class="app2-cat" style="background:rgba(255,215,0,0.2);color:#ffd700;">Machine Learning</span>
+        </div>
+        <div class="app2-body">
+          <div class="app2-name">Anomaly & Fraud Detection</div>
+          <div class="app2-desc">Normal transactions form a low-rank structure. Fraudulent ones don't fit the pattern. Reconstruct data with truncated SVD — rows with high reconstruction error are anomalies. Used in credit card fraud detection, network intrusion, and quality control.</div>
+          <div class="app2-demo">
+            <div class="demo-label">Reconstruction Error Concept</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <div style="flex:1;min-width:80px;">
+                <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">Normal transaction</div>
+                <div style="height:10px;background:rgba(106,247,162,0.3);border-radius:4px;position:relative;">
+                  <div style="width:8%;height:100%;background:#6af7a2;border-radius:4px;"></div>
+                </div>
+                <div style="font-size:11px;color:#6af7a2;margin-top:3px;font-family:'Space Mono',monospace;">error: 0.02</div>
+              </div>
+              <div style="flex:1;min-width:80px;">
+                <div style="font-size:12px;color:var(--text3);margin-bottom:4px;">Fraudulent ⚠️</div>
+                <div style="height:10px;background:rgba(247,106,106,0.3);border-radius:4px;position:relative;">
+                  <div style="width:87%;height:100%;background:#f76a6a;border-radius:4px;"></div>
+                </div>
+                <div style="font-size:11px;color:#f76a6a;margin-top:3px;font-family:'Space Mono',monospace;">error: 0.87</div>
+              </div>
+            </div>
+          </div>
+          <div class="app2-tag">||A - Aₖ||² as anomaly score</div>
+        </div>
+      </div>
+
+      <!-- 7 MRI Denoising -->
+      <div class="app-card2" data-cat="science" style="--ac:#e879f9;">
+        <div class="app-card2-header" style="background:linear-gradient(135deg,rgba(232,121,249,0.25),rgba(232,121,249,0.05));">
+          <span class="app2-icon">🧠</span>
+          <span class="app2-cat" style="background:rgba(232,121,249,0.2);color:#e879f9;">Science</span>
+        </div>
+        <div class="app2-body">
+          <div class="app2-name">MRI & Medical Image Denoising</div>
+          <div class="app2-desc">MRI scans are noisy matrices. Biological signal sits in large singular values; noise hides in the small ones. Truncated SVD reconstructs a clean image. Used in hospitals to reduce scan time (noisier but faster scans → SVD cleans them up).</div>
+          <div class="app2-how">
+            <div class="how-step"><span class="how-num">1</span> Raw MRI = signal + Gaussian noise matrix</div>
+            <div class="how-step"><span class="how-num">2</span> SVD: large σ = anatomy, small σ = noise</div>
+            <div class="how-step"><span class="how-num">3</span> Keep top-k → clean anatomical image</div>
+            <div class="how-step"><span class="how-num">4</span> SNR improvement without extra scan time</div>
+          </div>
+          <div class="app2-tag">scipy.linalg.svd on image patches</div>
+        </div>
+      </div>
+
+      <!-- 8 Stock Market -->
+      <div class="app-card2" data-cat="finance" style="--ac:#34d399;">
+        <div class="app-card2-header" style="background:linear-gradient(135deg,rgba(52,211,153,0.25),rgba(52,211,153,0.05));">
+          <span class="app2-icon">📈</span>
+          <span class="app2-cat" style="background:rgba(52,211,153,0.2);color:#34d399;">Finance</span>
+        </div>
+        <div class="app2-body">
+          <div class="app2-name">Stock Market Factor Analysis</div>
+          <div class="app2-desc">Build a matrix of daily stock returns (rows=stocks, cols=days). SVD extracts hidden market factors — the first singular vector often corresponds to the overall market trend. Used in quantitative finance for risk decomposition and portfolio optimization.</div>
+          <div class="app2-demo">
+            <div class="demo-label">Factor Contribution (example)</div>
+            <div id="stockFactors"></div>
+          </div>
+          <div class="app2-tag">numpy SVD on returns matrix</div>
+        </div>
+      </div>
+
+      <!-- 9 Natural Language Generation -->
+      <div class="app-card2" data-cat="nlp" style="--ac:#fb923c;">
+        <div class="app-card2-header" style="background:linear-gradient(135deg,rgba(251,146,60,0.25),rgba(251,146,60,0.05));">
+          <span class="app2-icon">🤖</span>
+          <span class="app2-cat" style="background:rgba(251,146,60,0.2);color:#fb923c;">NLP & Text</span>
+        </div>
+        <div class="app2-body">
+          <div class="app2-name">Word Embeddings (pre-Word2Vec)</div>
+          <div class="app2-desc">SVD on a word co-occurrence matrix produces dense vector representations for every word. Words that appear in similar contexts get similar vectors. "King − Man + Woman ≈ Queen" style analogies were first discovered this way. This was the precursor to Word2Vec and GloVe.</div>
+          <div class="app2-how">
+            <div class="how-step"><span class="how-num">1</span> Count matrix: C[i,j] = times word i near word j</div>
+            <div class="how-step"><span class="how-num">2</span> Apply PPMI weighting → smooth the matrix</div>
+            <div class="how-step"><span class="how-num">3</span> TruncatedSVD(k=300) → 300-dim word vectors</div>
+            <div class="how-step"><span class="how-num">4</span> Cosine similarity finds semantic neighbors</div>
+          </div>
+          <div class="app2-tag">TruncatedSVD on PPMI co-occurrence matrix</div>
+        </div>
+      </div>
+
+      <!-- 10 GPS / Sensor Fusion -->
+      <div class="app-card2" data-cat="science" style="--ac:#38bdf8;">
+        <div class="app-card2-header" style="background:linear-gradient(135deg,rgba(56,189,248,0.25),rgba(56,189,248,0.05));">
+          <span class="app2-icon">🛰️</span>
+          <span class="app2-cat" style="background:rgba(56,189,248,0.2);color:#38bdf8;">Science</span>
+        </div>
+        <div class="app2-body">
+          <div class="app2-name">GPS & Sensor Calibration</div>
+          <div class="app2-desc">GPS receivers get signals from multiple satellites — modeled as an overdetermined linear system. SVD computes the pseudoinverse to find the best-fit position. Also used to calibrate IMU sensors (accelerometers, gyroscopes) in phones, drones, and spacecraft.</div>
+          <div class="app2-how">
+            <div class="how-step"><span class="how-num">1</span> System: Ax = b (more equations than unknowns)</div>
+            <div class="how-step"><span class="how-num">2</span> SVD pseudoinverse: x = V × Σ⁺ × Uᵀ × b</div>
+            <div class="how-step"><span class="how-num">3</span> Minimizes total positioning error (least squares)</div>
+          </div>
+          <div class="app2-tag">numpy.linalg.lstsq (uses SVD internally)</div>
+        </div>
+      </div>
+
+      <!-- 11 Genomics -->
+      <div class="app-card2" data-cat="science" style="--ac:#a78bfa;">
+        <div class="app-card2-header" style="background:linear-gradient(135deg,rgba(167,139,250,0.25),rgba(167,139,250,0.05));">
+          <span class="app2-icon">🧬</span>
+          <span class="app2-cat" style="background:rgba(167,139,250,0.2);color:#a78bfa;">Science</span>
+        </div>
+        <div class="app2-body">
+          <div class="app2-name">Genomics — Gene Expression Analysis</div>
+          <div class="app2-desc">A gene expression matrix has thousands of genes × hundreds of patients. SVD (as PCA) reduces it to 2-3 dimensions for visualization — revealing clusters of patients with similar cancer subtypes, or genes that behave similarly across conditions.</div>
+          <div class="app2-how">
+            <div class="how-step"><span class="how-num">1</span> Matrix: rows=genes (20k), cols=patients (500)</div>
+            <div class="how-step"><span class="how-num">2</span> Normalize → TruncatedSVD(k=50)</div>
+            <div class="how-step"><span class="how-num">3</span> Plot first 2 components → cancer subtype clusters</div>
+            <div class="how-step"><span class="how-num">4</span> Top singular vectors = "metagenes"</div>
+          </div>
+          <div class="app2-tag">scanpy / sklearn PCA on scRNA-seq data</div>
+        </div>
+      </div>
+
+      <!-- 12 Latent Diffusion / AI Art -->
+      <div class="app-card2" data-cat="ml" style="--ac:#f43f5e;">
+        <div class="app-card2-header" style="background:linear-gradient(135deg,rgba(244,63,94,0.25),rgba(244,63,94,0.05));">
+          <span class="app2-icon">🎨</span>
+          <span class="app2-cat" style="background:rgba(244,63,94,0.2);color:#f43f5e;">Machine Learning</span>
+        </div>
+        <div class="app2-body">
+          <div class="app2-name">LoRA — Fine-tuning AI Models</div>
+          <div class="app2-desc">LoRA (Low-Rank Adaptation) — the technique behind fine-tuning Stable Diffusion, LLaMA, and GPT — is literally SVD. Large weight matrices are approximated as low-rank products (A = U × Vᵀ). This reduces fine-tuning a 7B parameter model from 28GB to ~50MB of new weights.</div>
+          <div class="app2-how">
+            <div class="how-step"><span class="how-num">1</span> Full weight update ΔW is large (expensive)</div>
+            <div class="how-step"><span class="how-num">2</span> Approximate: ΔW ≈ A × B (low-rank, rank=4~64)</div>
+            <div class="how-step"><span class="how-num">3</span> Train only A and B → ~1000× fewer parameters</div>
+            <div class="how-step"><span class="how-num">4</span> This IS truncated SVD applied to neural nets</div>
+          </div>
+          <div class="app2-tag">huggingface/peft — LoRA implementation</div>
+        </div>
+      </div>
+
+    </div><!-- end app-grid -->
   </div>
 </section>
 
@@ -1372,6 +1694,101 @@ function calcVariance() {
 document.getElementById('btnVariance').addEventListener('click', calcVariance);
 document.getElementById('sigmaInput').addEventListener('input', calcVariance);
 calcVariance();
+
+// ─── CATEGORY FILTER ───
+document.getElementById('catFilters').addEventListener('click', function(e) {
+  const btn = e.target.closest('.cat-btn');
+  if (!btn) return;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const cat = btn.dataset.cat;
+  document.querySelectorAll('.app-card2').forEach(card => {
+    if (cat === 'all' || card.dataset.cat === cat) {
+      card.classList.remove('hidden');
+      card.style.animation = 'fadeIn 0.35s ease both';
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+});
+
+// ─── IMAGE COMPRESSION SLIDER ───
+const imgK = document.getElementById('imgK');
+const imgKval = document.getElementById('imgKval');
+const imgRes = document.getElementById('imgCompResult');
+function updateImgComp() {
+  const k = parseInt(imgK.value);
+  const totalSingular = 500; // simulated 500x500 image
+  // Simulated: quality follows roughly 1 - exp(-k/15)
+  const quality = Math.min(100, Math.round((1 - Math.exp(-k / 14)) * 100));
+  // Storage: original = m*n, compressed = k*(m+n+1)
+  const original = 500 * 500;
+  const compressed = k * (500 + 500 + 1);
+  const savings = Math.round((1 - compressed / original) * 100);
+  const col = k <= 10 ? '#f76a6a' : k <= 30 ? '#f7a26a' : k <= 60 ? '#ffd700' : '#6af7a2';
+  imgKval.textContent = 'k=' + k;
+  imgKval.style.color = col;
+  imgRes.innerHTML =
+    '<span style="color:' + col + ';font-weight:800;">' + quality + '% visual quality</span>' +
+    ' &nbsp;|&nbsp; ' +
+    '<span style="color:var(--text2);">storage: ' + (savings > 0 ? savings + '% saved' : 'larger than original') + '</span>' +
+    ' &nbsp;|&nbsp; ' +
+    '<span style="color:var(--text3);">' + compressed.toLocaleString() + ' numbers vs ' + original.toLocaleString() + '</span>';
+}
+imgK.addEventListener('input', updateImgComp);
+updateImgComp();
+
+// ─── RATINGS MATRIX ───
+const ratings = [
+  ['User',    'Inception', 'Titanic', 'Matrix', 'Notebook', 'Avengers'],
+  ['Alice',   '5',         '?',       '4',      '5',        '?'       ],
+  ['Bob',     '?',         '3',       '5',      '?',        '4'       ],
+  ['Carol',   '4',         '5',       '?',      '4',        '?'       ],
+  ['Dave',    '?',         '?',       '3',      '2',        '5'       ],
+];
+const rmEl = document.getElementById('ratingsMatrix');
+if (rmEl) {
+  let h = '';
+  ratings.forEach((row, ri) => {
+    h += '<div style="display:flex;gap:6px;margin-bottom:2px;">';
+    row.forEach((cell, ci) => {
+      const isHeader = ri === 0 || ci === 0;
+      const isUnk = cell === '?';
+      const col = isHeader ? 'var(--text2)' : isUnk ? '#f7a26a' : '#6af7a2';
+      const fw = isHeader ? '800' : '700';
+      const bg = isUnk ? 'rgba(247,162,106,0.1)' : isHeader ? 'transparent' : 'rgba(106,247,162,0.07)';
+      const w = ci === 0 ? '56px' : '72px';
+      h += '<div style="min-width:' + w + ';text-align:center;font-size:12px;font-weight:' + fw + ';color:' + col + ';background:' + bg + ';border-radius:5px;padding:3px 4px;">' + cell + '</div>';
+    });
+    h += '</div>';
+  });
+  h += '<div style="font-size:12px;color:var(--text3);margin-top:10px;font-family:\'Space Mono\',monospace;">? = SVD predicts these missing ratings</div>';
+  rmEl.innerHTML = h;
+}
+
+// ─── STOCK FACTORS ───
+const sfEl = document.getElementById('stockFactors');
+if (sfEl) {
+  const factors = [
+    { name: 'Market trend',   pct: 62, col: '#6af7a2' },
+    { name: 'Growth vs Value',pct: 18, col: '#3dd6f5' },
+    { name: 'Sector rotation',pct: 11, col: '#7c6af7' },
+    { name: 'Volatility',     pct:  6, col: '#f7a26a' },
+    { name: 'Residual noise', pct:  3, col: '#9090b0' },
+  ];
+  let sh = '';
+  factors.forEach(f => {
+    sh += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">' +
+      '<div style="font-size:12px;color:var(--text2);min-width:110px;font-weight:600;">' + f.name + '</div>' +
+      '<div style="flex:1;height:12px;background:rgba(255,255,255,0.06);border-radius:4px;overflow:hidden;">' +
+        '<div style="width:' + f.pct + '%;height:100%;background:' + f.col + ';border-radius:4px;"></div>' +
+      '</div>' +
+      '<div style="font-family:\'Space Mono\',monospace;font-size:12px;font-weight:800;color:' + f.col + ';min-width:36px;">' + f.pct + '%</div>' +
+    '</div>';
+  });
+  sfEl.innerHTML = sh;
+}
+
 </script>
 </body>
 </html>
