@@ -17,9 +17,9 @@
     --accent3:   #f7a26a;
     --accent4:   #6af7a2;
     --accent5:   #f76a9a;
-    --text:      #e8e8f0;
-    --text2:     #9090b0;
-    --text3:     #5a5a7a;
+    --text:      #ffffff;
+    --text2:     #d0d0e8;
+    --text3:     #9090b8;
     --glow1:     rgba(124,106,247,0.3);
     --glow2:     rgba(61,214,245,0.25);
   }
@@ -32,8 +32,8 @@
     background: var(--bg);
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
-    font-size: 15px;
-    line-height: 1.7;
+    font-size: 17px;
+    font-weight: 500;
     overflow-x: hidden;
   }
 
@@ -106,7 +106,8 @@
 
   .hero-subtitle {
     font-family: 'Space Mono', monospace;
-    font-size: clamp(13px, 2vw, 16px);
+    font-size: clamp(14px, 2vw, 18px);
+    font-weight: 700;
     color: var(--text2);
     margin-top: 20px;
     animation: fadeDown 0.8s 0.2s ease both;
@@ -128,9 +129,9 @@
   .fml-u  { color: var(--accent1); }
   .fml-s  { color: var(--accent2); }
   .fml-vt { color: var(--accent3); }
-  .fml-eq { color: var(--text3); }
+  .fml-eq { color: var(--text2); font-weight: 700; }
   .fml-a  { color: var(--text); }
-  .fml-x  { color: var(--text3); font-size: 0.6em; }
+  .fml-x  { color: var(--text2); font-size: 0.65em; font-weight: 700; }
 
   .scroll-hint {
     margin-top: 60px;
@@ -159,10 +160,10 @@
   }
   nav a {
     font-family: 'Space Mono', monospace;
-    font-size: 11px;
+    font-size: 13px;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    color: var(--text3);
+    color: var(--text2);
     text-decoration: none;
     padding: 18px 20px;
     white-space: nowrap;
@@ -181,7 +182,7 @@
 
   .sec-label {
     font-family: 'Space Mono', monospace;
-    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    font-size: 13px; letter-spacing: 4px; text-transform: uppercase;
     color: var(--accent1);
     margin-bottom: 12px;
   }
@@ -197,9 +198,10 @@
 
   .sec-body {
     color: var(--text2);
-    max-width: 640px;
-    font-size: 15px;
-    line-height: 1.8;
+    max-width: 700px;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.85;
     margin-bottom: 48px;
   }
 
@@ -241,11 +243,12 @@
 
   .card-title {
     font-family: 'Syne', sans-serif;
-    font-size: 18px; font-weight: 700;
-    margin-bottom: 8px;
+    font-size: 20px; font-weight: 800;
+    margin-bottom: 10px;
+    color: #ffffff;
   }
 
-  .card-body { color: var(--text2); font-size: 14px; line-height: 1.7; }
+  .card-body { color: var(--text2); font-size: 16px; font-weight: 500; line-height: 1.75; }
   .card-tag {
     display: inline-block;
     margin-top: 14px;
@@ -270,8 +273,9 @@
   }
 
   .matrix-label {
-    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
-    font-weight: 700;
+    font-size: 14px; letter-spacing: 2px; text-transform: uppercase;
+    font-weight: 800;
+    color: #ffffff;
   }
 
   .matrix-grid {
@@ -295,19 +299,20 @@
   .matrix-grid::after  { right: 0; border-left: none;  border-radius: 0 3px 3px 0; }
 
   .matrix-cell {
-    width: 48px; height: 40px;
+    width: 58px; height: 48px;
     display: flex; align-items: center; justify-content: center;
     border-radius: 6px;
-    font-size: 13px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 800;
     transition: all 0.4s;
     cursor: default;
   }
 
   .mx-op {
     font-family: 'Space Mono', monospace;
-    font-size: 22px;
-    color: var(--text3);
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text2);
     align-self: center;
   }
 
@@ -351,33 +356,35 @@
 
   .step-title {
     font-family: 'Syne', sans-serif;
-    font-size: 20px; font-weight: 700;
-    margin-bottom: 10px;
+    font-size: 24px; font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 12px;
     padding-top: 10px;
   }
 
-  .step-desc { color: var(--text2); font-size: 14px; line-height: 1.8; margin-bottom: 20px; }
+  .step-desc { color: var(--text2); font-size: 17px; font-weight: 500; line-height: 1.85; margin-bottom: 20px; }
 
   /* ─── CODE BLOCKS ─── */
   .code-block {
     background: #0a0a12;
     border: 1px solid var(--border);
     border-radius: 14px;
-    padding: 20px 24px;
+    padding: 22px 28px;
     font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    line-height: 1.8;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 2;
     overflow-x: auto;
     position: relative;
   }
 
-  .code-block .c { color: #4a9e6a; }   /* comments */
-  .code-block .k { color: var(--accent1); } /* keywords */
-  .code-block .f { color: var(--accent2); } /* functions */
-  .code-block .n { color: var(--accent3); } /* numbers */
-  .code-block .s { color: var(--accent4); } /* strings */
-  .code-block .p { color: var(--text); }    /* plain */
-  .code-block .v { color: var(--accent5); } /* variables */
+  .code-block .c { color: #5bbf7a; font-style: italic; }   /* comments */
+  .code-block .k { color: var(--accent1); font-weight: 800; } /* keywords */
+  .code-block .f { color: var(--accent2); font-weight: 800; } /* functions */
+  .code-block .n { color: var(--accent3); font-weight: 800; } /* numbers */
+  .code-block .s { color: var(--accent4); }                   /* strings */
+  .code-block .p { color: #ffffff; }                          /* plain */
+  .code-block .v { color: var(--accent5); }
 
   .code-label {
     position: absolute; top: 12px; right: 16px;
@@ -390,9 +397,10 @@
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 24px 28px;
+    padding: 28px 32px;
     font-family: 'Space Mono', monospace;
-    font-size: 14px;
+    font-size: 17px;
+    font-weight: 700;
     text-align: center;
     color: var(--accent2);
     margin: 20px 0;
@@ -431,14 +439,16 @@
 
   .sigma-val {
     font-family: 'Space Mono', monospace;
-    font-size: 11px;
+    font-size: 13px;
+    font-weight: 700;
     color: var(--text2);
     text-align: center;
   }
 
   .sigma-idx {
     font-family: 'Space Mono', monospace;
-    font-size: 10px;
+    font-size: 13px;
+    font-weight: 700;
     color: var(--text3);
   }
 
@@ -453,11 +463,12 @@
 
   .interact-title {
     font-family: 'Syne', sans-serif;
-    font-size: 18px; font-weight: 700;
-    margin-bottom: 6px;
+    font-size: 22px; font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 8px;
   }
 
-  .interact-sub { color: var(--text2); font-size: 13px; margin-bottom: 24px; }
+  .interact-sub { color: var(--text2); font-size: 16px; font-weight: 500; margin-bottom: 24px; }
 
   .input-grid {
     display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
@@ -483,9 +494,9 @@
     display: inline-flex; align-items: center; gap: 8px;
     background: linear-gradient(135deg, var(--accent1), #5a4bd8);
     color: white; border: none; border-radius: 10px;
-    padding: 12px 24px;
+    padding: 14px 28px;
     font-family: 'Space Mono', monospace;
-    font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+    font-size: 14px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 4px 20px var(--glow1);
@@ -510,14 +521,14 @@
 
   .result-label {
     font-family: 'Space Mono', monospace;
-    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
-    margin-bottom: 10px;
+    font-size: 13px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 12px;
   }
 
   .result-matrix {
     font-family: 'Space Mono', monospace;
-    font-size: 12px; line-height: 2;
-    color: var(--text2);
+    font-size: 15px; font-weight: 700; line-height: 2.2;
+    color: #ffffff;
   }
 
   /* ─── APPLICATIONS GRID ─── */
@@ -544,12 +555,12 @@
   }
   .app-card:hover::after { transform: scaleX(1); }
 
-  .app-icon { font-size: 28px; margin-bottom: 14px; }
-  .app-name { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
-  .app-desc { color: var(--text2); font-size: 13px; line-height: 1.7; }
+  .app-icon { font-size: 32px; margin-bottom: 14px; }
+  .app-name { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800; color: #ffffff; margin-bottom: 10px; }
+  .app-desc { color: var(--text2); font-size: 15px; font-weight: 500; line-height: 1.75; }
   .app-tag { 
-    margin-top: 12px;
-    font-family: 'Space Mono', monospace; font-size: 10px;
+    margin-top: 14px;
+    font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700;
     color: var(--ac); letter-spacing: 1px;
   }
 
@@ -602,20 +613,20 @@
   }
   table.comp th {
     background: var(--bg3);
-    padding: 14px 20px; text-align: left;
+    padding: 16px 20px; text-align: left;
     font-family: 'Space Mono', monospace;
-    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
     color: var(--text2);
     border-bottom: 1px solid var(--border);
   }
   table.comp td {
-    padding: 13px 20px;
+    padding: 15px 20px;
     border-bottom: 1px solid var(--border);
-    color: var(--text2); line-height: 1.6;
+    color: var(--text2); font-size: 15px; font-weight: 500; line-height: 1.6;
   }
   table.comp tr:last-child td { border-bottom: none; }
-  table.comp tr:hover td { background: rgba(255,255,255,0.02); }
-  table.comp td:first-child { color: var(--accent1); font-weight: 600; font-family: 'Space Mono', monospace; font-size: 13px; }
+  table.comp tr:hover td { background: rgba(255,255,255,0.03); }
+  table.comp td:first-child { color: var(--accent1); font-weight: 800; font-family: 'Space Mono', monospace; font-size: 14px; }
 
   /* ─── FOOTER ─── */
   footer {
@@ -623,7 +634,7 @@
     padding: 40px 24px;
     text-align: center;
     color: var(--text3);
-    font-size: 13px;
+    font-size: 15px;
     font-family: 'Space Mono', monospace;
     letter-spacing: 1px;
   }
