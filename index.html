@@ -3,560 +3,1364 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SVD Image Surgeon</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/numeric/1.2.6/numeric.min.js"></script>
+<title>SVD — Interactive Visual Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap');
-:root{--bg:#0a0a0f;--panel:#111118;--border:#2a2a3e;--accent:#7cf5b0;--blue:#5b8fff;--pink:#ff6b9d;--text:#ffffff;--muted:#ccccdd}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;font-size:16px}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(124,245,176,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(124,245,176,.025) 1px,transparent 1px);background-size:36px 36px;pointer-events:none;z-index:0}
-.wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:24px 18px}
+  :root {
+    --bg:        #09090f;
+    --bg2:       #0f0f1a;
+    --bg3:       #141428;
+    --panel:     #12121e;
+    --border:    rgba(255,255,255,0.07);
+    --accent1:   #7c6af7;
+    --accent2:   #3dd6f5;
+    --accent3:   #f7a26a;
+    --accent4:   #6af7a2;
+    --accent5:   #f76a9a;
+    --text:      #e8e8f0;
+    --text2:     #9090b0;
+    --text3:     #5a5a7a;
+    --glow1:     rgba(124,106,247,0.3);
+    --glow2:     rgba(61,214,245,0.25);
+  }
 
-/* header */
-.hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;gap:12px;flex-wrap:wrap}
-.hdr h1{font-family:'Space Mono',monospace;font-size:clamp(22px,2.8vw,32px);color:var(--accent);letter-spacing:-.5px}
-.hdr h1 em{color:var(--text);font-style:normal}
-.hdr p{color:#ccccdd;font-size:15px;margin-top:4px;max-width:440px;line-height:1.6}
-.badge{font-family:'Space Mono',monospace;font-size:14px;padding:6px 14px;border:1px solid var(--border);border-radius:5px;color:#ccccdd;background:var(--panel);white-space:nowrap;align-self:flex-start}
+  * { margin:0; padding:0; box-sizing:border-box; }
 
-/* drop zone */
-#dropZone{border:2px dashed var(--border);border-radius:12px;padding:28px 20px;text-align:center;background:var(--panel);margin-bottom:20px;transition:border-color .2s,background .2s;cursor:pointer;user-select:none}
-#dropZone.over{border-color:var(--accent);background:rgba(124,245,176,.06)}
-#dropZone .icon{font-size:28px;margin-bottom:7px}
-#dropZone p{color:#ccccdd;font-size:15px;line-height:1.7}
-#dropZone strong{color:var(--accent)}
-.samples{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-top:10px}
-.sbtn{background:var(--border);border:1px solid #3a3a55;border-radius:5px;padding:7px 16px;font-family:'Space Mono',monospace;font-size:13px;color:#ccccdd;cursor:pointer;transition:all .15s}
-.sbtn:hover{border-color:var(--accent);color:var(--accent);background:rgba(124,245,176,.08)}
-#fileInput{display:none}
+  html { scroll-behavior: smooth; }
 
-/* status bar */
-#statusBar{display:none;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:14px;font-family:'Space Mono',monospace;font-size:14px;color:#ddddee}
-#statusBar.show{display:flex}
-#statusBar.err{border-color:var(--pink);color:var(--pink)}
-.spin{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-.spin.hide{display:none}
-@keyframes spin{to{transform:rotate(360deg)}}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
 
-/* reset button */
-#resetBtn{display:none;background:rgba(255,107,157,.12);border:1px solid rgba(255,107,157,.4);border-radius:8px;padding:12px 20px;font-family:'Space Mono',monospace;font-size:14px;color:var(--pink);cursor:pointer;transition:all .2s;width:100%;margin-bottom:16px;letter-spacing:.5px}
-#resetBtn:hover{background:rgba(255,107,157,.25);border-color:var(--pink)}
-#resetBtn.show{display:block}
-/* size warning */
-#sizeWarn{display:none;background:rgba(255,107,157,.08);border:1px solid rgba(255,107,157,.2);border-radius:8px;padding:10px 16px;margin-bottom:14px;font-size:14px;color:var(--pink);font-family:'Space Mono',monospace}
-#sizeWarn.show{display:block}
+  /* ─── NOISE OVERLAY ─── */
+  body::before {
+    content:'';
+    position:fixed; inset:0; z-index:0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events:none; opacity:0.5;
+  }
 
-/* size warning */
+  /* ─── HERO ─── */
+  #hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 60px 24px;
+    overflow: hidden;
+  }
 
-/* stats */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-@media(max-width:560px){.stats{grid-template-columns:1fr 1fr}}
-.stat{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 14px}
-.stat .sl{font-family:'Space Mono',monospace;font-size:12px;color:#ffffff;text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;opacity:0.7}
-.stat .sv{font-family:'Space Mono',monospace;font-size:24px;font-weight:700}
-.green{color:var(--accent)}.blue{color:var(--blue)}.pink{color:var(--pink)}.white{color:var(--text)}
+  .hero-grid {
+    position: absolute; inset: 0; z-index: 0;
+    background-image:
+      linear-gradient(rgba(124,106,247,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,106,247,0.06) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+  }
 
-/* canvases */
-.cvs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
-@media(max-width:600px){.cvs{grid-template-columns:1fr}}
-.cp{background:var(--panel);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.cph{padding:9px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.cph .cl{font-family:'Space Mono',monospace;font-size:12px;color:#ffffff;text-transform:uppercase;letter-spacing:1px;opacity:0.75}
-.cph .cv{font-family:'Space Mono',monospace;font-size:14px;color:var(--accent)}
-.ca{display:flex;align-items:center;justify-content:center;padding:12px;min-height:150px;background:#07070e}
-canvas{max-width:100%;max-height:220px;border-radius:3px;display:block;image-rendering:pixelated}
-.ph{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;color:#aaaacc;gap:7px}
-.ph .pi{font-size:26px;opacity:.5}
-.ph p{font-size:14px}
+  .hero-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    animation: pulseGlow 6s ease-in-out infinite alternate;
+  }
+  .hero-glow.a { width:600px; height:600px; background: rgba(124,106,247,0.15); top:-100px; left:-100px; }
+  .hero-glow.b { width:400px; height:400px; background: rgba(61,214,245,0.12); bottom:-50px; right:-50px; animation-delay: -3s; }
 
-/* controls */
-.ctrls{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:16px}
-.cr{display:flex;align-items:center;gap:13px;flex-wrap:wrap}
-.clbl{font-family:'Space Mono',monospace;font-size:13px;color:#ffffff;text-transform:uppercase;letter-spacing:1px;min-width:80px}
-input[type=range]{flex:1;min-width:120px;height:5px;-webkit-appearance:none;background:var(--border);border-radius:2px;outline:none;cursor:pointer}
-input[type=range]:disabled{opacity:.35;cursor:not-allowed}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 10px rgba(124,245,176,.5)}
-.rnum{font-family:'Space Mono',monospace;font-size:26px;font-weight:700;color:var(--accent);min-width:50px;text-align:right}
-.ebar{margin-top:12px}
-.elbl{display:flex;justify-content:space-between;font-family:'Space Mono',monospace;font-size:13px;color:#ffffff;margin-bottom:4px}
-.etrack{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
-.efill{height:100%;background:linear-gradient(90deg,var(--blue),var(--accent));border-radius:3px;transition:width .1s ease;width:0%}
+  @keyframes pulseGlow { from { opacity:0.6; transform:scale(1); } to { opacity:1; transform:scale(1.1); } }
 
-/* spectrum */
-.spec{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px}
-.spech{display:flex;justify-content:space-between;align-items:center;font-family:'Space Mono',monospace;font-size:12px;color:#ffffff;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;opacity:0.85}
-.spech .snote{color:var(--accent);font-size:13px;text-transform:none;letter-spacing:0;opacity:1}
-#specCanvas{width:100%;height:110px;display:block;border-radius:3px}
+  .hero-content { position: relative; z-index: 1; max-width: 800px; }
 
-/* math */
-.math{background:rgba(91,143,255,.06);border:1px solid rgba(91,143,255,.18);border-radius:10px;padding:16px 18px}
-.math h3{font-family:'Space Mono',monospace;font-size:13px;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:9px}
-.math .eq{font-family:'Space Mono',monospace;font-size:16px;color:#ffffff;line-height:2.2}
-.math .eq .sv{color:var(--accent)}.math .eq .uv{color:var(--blue)}.math .eq .vv{color:var(--pink)}
-.math .eq .dim{color:#ccccdd;font-size:13px}
-.math p{font-size:15px;color:#ddddee;line-height:1.7;margin-top:8px}
-.hidden{display:none!important}
+  .hero-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    border: 1px solid rgba(61,214,245,0.3);
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 32px;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(56px, 10vw, 96px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -3px;
+    background: linear-gradient(135deg, #fff 30%, var(--accent1) 70%, var(--accent2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    animation: fadeDown 0.8s 0.1s ease both;
+  }
+
+  .hero-subtitle {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(13px, 2vw, 16px);
+    color: var(--text2);
+    margin-top: 20px;
+    animation: fadeDown 0.8s 0.2s ease both;
+  }
+
+  .hero-formula {
+    margin-top: 48px;
+    display: inline-flex; align-items: center; gap: 16px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 36px;
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(20px, 4vw, 32px);
+    font-weight: 700;
+    animation: fadeDown 0.8s 0.3s ease both;
+  }
+
+  .fml-u  { color: var(--accent1); }
+  .fml-s  { color: var(--accent2); }
+  .fml-vt { color: var(--accent3); }
+  .fml-eq { color: var(--text3); }
+  .fml-a  { color: var(--text); }
+  .fml-x  { color: var(--text3); font-size: 0.6em; }
+
+  .scroll-hint {
+    margin-top: 60px;
+    font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text3);
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    animation: fadeDown 0.8s 0.5s ease both;
+  }
+  .scroll-arrow {
+    width: 1px; height: 40px;
+    background: linear-gradient(to bottom, var(--accent1), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+  @keyframes scrollPulse { 0%,100%{ opacity:0.3; transform:scaleY(0.8); } 50%{ opacity:1; transform:scaleY(1); } }
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-20px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ─── NAV ─── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(9,9,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0;
+    padding: 0 32px;
+    overflow-x: auto;
+  }
+  nav a {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text3);
+    text-decoration: none;
+    padding: 18px 20px;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  nav a:hover { color: var(--text); border-bottom-color: var(--accent1); }
+
+  /* ─── SECTIONS ─── */
+  section {
+    position: relative; z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 80px 24px;
+  }
+
+  .sec-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+    color: var(--accent1);
+    margin-bottom: 12px;
+  }
+
+  .sec-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.05;
+    margin-bottom: 20px;
+  }
+
+  .sec-body {
+    color: var(--text2);
+    max-width: 640px;
+    font-size: 15px;
+    line-height: 1.8;
+    margin-bottom: 48px;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 0;
+  }
+
+  /* ─── CARDS ─── */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s, border-color 0.25s;
+  }
+  .card:hover { transform: translateY(-4px); }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent-card, var(--accent1)), transparent);
+    opacity: 0.6;
+  }
+
+  .card-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    margin-bottom: 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .card-body { color: var(--text2); font-size: 14px; line-height: 1.7; }
+  .card-tag {
+    display: inline-block;
+    margin-top: 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    color: var(--text3);
+  }
+
+  /* ─── MATRIX VIZ ─── */
+  .matrix-eq {
+    display: flex; align-items: center; justify-content: center;
+    flex-wrap: wrap; gap: 16px;
+    margin: 40px 0;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .matrix-block {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+
+  .matrix-label {
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .matrix-grid {
+    display: grid;
+    gap: 3px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    position: relative;
+  }
+
+  /* bracket pseudo-elements */
+  .matrix-grid::before, .matrix-grid::after {
+    content: '';
+    position: absolute; top: 8px; bottom: 8px;
+    width: 6px;
+    border: 2px solid rgba(255,255,255,0.2);
+  }
+  .matrix-grid::before { left: 0; border-right: none; border-radius: 3px 0 0 3px; }
+  .matrix-grid::after  { right: 0; border-left: none;  border-radius: 0 3px 3px 0; }
+
+  .matrix-cell {
+    width: 48px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    transition: all 0.4s;
+    cursor: default;
+  }
+
+  .mx-op {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    color: var(--text3);
+    align-self: center;
+  }
+
+  /* ─── STEPS ─── */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+
+  .step {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 0 24px;
+    position: relative;
+  }
+
+  .step-num-col {
+    display: flex; flex-direction: column; align-items: center;
+  }
+
+  .step-num {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 2px solid var(--accent1);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 16px; font-weight: 700;
+    color: var(--accent1);
+    flex-shrink: 0;
+    position: relative; z-index: 1;
+    box-shadow: 0 0 20px var(--glow1);
+  }
+
+  .step-line {
+    width: 2px; flex: 1; min-height: 40px;
+    background: linear-gradient(to bottom, var(--accent1), rgba(124,106,247,0.1));
+    margin-top: 8px; margin-bottom: 0;
+  }
+
+  .step-content {
+    padding: 0 0 48px;
+  }
+
+  .step-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 700;
+    margin-bottom: 10px;
+    padding-top: 10px;
+  }
+
+  .step-desc { color: var(--text2); font-size: 14px; line-height: 1.8; margin-bottom: 20px; }
+
+  /* ─── CODE BLOCKS ─── */
+  .code-block {
+    background: #0a0a12;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-x: auto;
+    position: relative;
+  }
+
+  .code-block .c { color: #4a9e6a; }   /* comments */
+  .code-block .k { color: var(--accent1); } /* keywords */
+  .code-block .f { color: var(--accent2); } /* functions */
+  .code-block .n { color: var(--accent3); } /* numbers */
+  .code-block .s { color: var(--accent4); } /* strings */
+  .code-block .p { color: var(--text); }    /* plain */
+  .code-block .v { color: var(--accent5); } /* variables */
+
+  .code-label {
+    position: absolute; top: 12px; right: 16px;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  /* ─── FORMULA BOXES ─── */
+  .formula-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    text-align: center;
+    color: var(--accent2);
+    margin: 20px 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .formula-box::before {
+    content:'';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, rgba(61,214,245,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ─── SIGMA DIAGRAM ─── */
+  .sigma-viz {
+    display: flex; gap: 12px; align-items: flex-end;
+    justify-content: center;
+    padding: 32px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    margin: 28px 0;
+  }
+
+  .sigma-bar-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+
+  .sigma-bar {
+    width: 48px;
+    border-radius: 6px 6px 0 0;
+    transition: all 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    position: relative;
+    cursor: pointer;
+  }
+
+  .sigma-bar:hover { filter: brightness(1.3); transform: scaleX(1.05); }
+
+  .sigma-val {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    text-align: center;
+  }
+
+  .sigma-idx {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+  }
+
+  /* ─── INTERACTIVE MATRIX ─── */
+  .interact-wrap {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 32px;
+    margin: 32px 0;
+  }
+
+  .interact-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .interact-sub { color: var(--text2); font-size: 13px; margin-bottom: 24px; }
+
+  .input-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+    margin-bottom: 20px; max-width: 200px;
+  }
+
+  .mat-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 16px; font-weight: 700;
+    text-align: center;
+    width: 100%;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .mat-input:focus { border-color: var(--accent1); box-shadow: 0 0 0 2px var(--glow1); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, var(--accent1), #5a4bd8);
+    color: white; border: none; border-radius: 10px;
+    padding: 12px 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px; letter-spacing: 1px; text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px var(--glow1);
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 28px var(--glow1); }
+  .btn:active { transform: translateY(0); }
+
+  .svd-result {
+    margin-top: 24px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+  .result-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+
+  .result-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .result-matrix {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px; line-height: 2;
+    color: var(--text2);
+  }
+
+  /* ─── APPLICATIONS GRID ─── */
+  .app-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+
+  .app-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    transition: all 0.25s;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .app-card:hover { transform: translateY(-3px); border-color: var(--ac); }
+  .app-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: var(--ac);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+  .app-card:hover::after { transform: scaleX(1); }
+
+  .app-icon { font-size: 28px; margin-bottom: 14px; }
+  .app-name { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .app-desc { color: var(--text2); font-size: 13px; line-height: 1.7; }
+  .app-tag { 
+    margin-top: 12px;
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    color: var(--ac); letter-spacing: 1px;
+  }
+
+  /* ─── TOOLTIP ─── */
+  .tip {
+    display: inline-block;
+    position: relative;
+    border-bottom: 1px dashed var(--text3);
+    cursor: help;
+  }
+  .tip::after {
+    content: attr(data-tip);
+    position: absolute; bottom: calc(100% + 8px); left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px; color: var(--text2);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0; transition: opacity 0.2s;
+    z-index: 10;
+  }
+  .tip:hover::after { opacity: 1; }
+
+  /* ─── SCROLL ANIMATION ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── HIGHLIGHT ─── */
+  .hl { color: var(--accent1); font-weight: 600; }
+  .hl2 { color: var(--accent2); font-weight: 600; }
+  .hl3 { color: var(--accent3); font-weight: 600; }
+  .hl4 { color: var(--accent4); font-weight: 600; }
+  .hl5 { color: var(--accent5); font-weight: 600; }
+
+  /* ─── COMPARISON TABLE ─── */
+  table.comp {
+    width: 100%; border-collapse: collapse;
+    font-size: 14px;
+    border-radius: 16px; overflow: hidden;
+  }
+  table.comp th {
+    background: var(--bg3);
+    padding: 14px 20px; text-align: left;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
+  }
+  table.comp td {
+    padding: 13px 20px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2); line-height: 1.6;
+  }
+  table.comp tr:last-child td { border-bottom: none; }
+  table.comp tr:hover td { background: rgba(255,255,255,0.02); }
+  table.comp td:first-child { color: var(--accent1); font-weight: 600; font-family: 'Space Mono', monospace; font-size: 13px; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--text3);
+    font-size: 13px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media(max-width: 600px) {
+    .matrix-eq { gap: 10px; }
+    .matrix-cell { width: 38px; height: 32px; font-size: 11px; }
+    .step { grid-template-columns: 48px 1fr; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <div class="hdr">
-    <div>
-      <h1><em>SVD</em> Image Surgeon</h1>
-      <p>Decompose any image rank by rank. Drag the slider to watch it reconstruct in real time.</p>
+<!-- ══════════════════ HERO ══════════════════ -->
+<section id="hero" style="max-width:100%; padding:0; min-height:100vh;">
+  <div class="hero-grid"></div>
+  <div class="hero-glow a"></div>
+  <div class="hero-glow b"></div>
+  <div class="hero-content">
+    <div class="hero-tag">Data Science — Linear Algebra</div>
+    <h1 class="hero-title">Singular<br>Value<br>Decomp.</h1>
+    <p class="hero-subtitle">A = U × Σ × Vᵀ — breaking matrices into beautiful pieces</p>
+    <div class="hero-formula">
+      <span class="fml-a">A</span>
+      <span class="fml-eq">=</span>
+      <span class="fml-u">U</span>
+      <span class="fml-x">×</span>
+      <span class="fml-s">Σ</span>
+      <span class="fml-x">×</span>
+      <span class="fml-vt">Vᵀ</span>
     </div>
-    <span class="badge">A = UΣVᵀ</span>
-  </div>
-
-  <!-- Drop zone -->
-  <div id="dropZone">
-    <div class="icon">🔬</div>
-    <p><strong>Click to upload</strong> or drag &amp; drop an image onto this box</p>
-    <p style="font-size:11px;margin-top:3px;color:var(--muted)">Large images are auto-resized for speed &nbsp;·&nbsp; JPG · PNG · WebP</p>
-    <div class="samples">
-      <button class="sbtn" onclick="loadSample('photo')">📷 Photo-like</button>
-      <button class="sbtn" onclick="loadSample('gradient')">🌈 Gradient</button>
-      <button class="sbtn" onclick="loadSample('checker')">♟ Checkerboard</button>
-      <button class="sbtn" onclick="loadSample('landscape')">🏔 Landscape</button>
+    <div class="scroll-hint">
+      <span>Explore Below</span>
+      <div class="scroll-arrow"></div>
     </div>
-    <input type="file" id="fileInput" accept="image/*">
   </div>
+</section>
 
-  <!-- Size warning -->
-  <div id="sizeWarn"></div>
+<!-- ══════════════════ NAV ══════════════════ -->
+<nav>
+  <a href="#what">What is SVD</a>
+  <a href="#matrices">The 3 Matrices</a>
+  <a href="#steps">Step-by-Step</a>
+  <a href="#interactive">Try It Live</a>
+  <a href="#truncated">Truncated SVD</a>
+  <a href="#applications">Applications</a>
+  <a href="#code">Python Code</a>
+</nav>
 
-  <!-- Status bar -->
-  <div id="statusBar">
-    <div class="spin" id="spinner"></div>
-    <span id="statusMsg">Ready</span>
-  </div>
+<!-- ══════════════════ WHAT IS SVD ══════════════════ -->
+<div class="divider"></div>
+<section id="what">
+  <div class="reveal">
+    <div class="sec-label">Section 01</div>
+    <h2 class="sec-title">What is SVD?</h2>
+    <p class="sec-body">
+      SVD stands for <span class="hl">Singular Value Decomposition</span>. It's a mathematical technique that takes any matrix and breaks it into three simpler, structured matrices. Think of it as <em>factoring</em> a matrix — just like how 12 = 3 × 4, any matrix can be written as <span class="hl2">U × Σ × Vᵀ</span>.
+    </p>
 
-  <!-- Reset button (shown after image loaded) -->
-  <button id="resetBtn" onclick="doReset()">↺ Load New Image</button>
-
-  <!-- Stats -->
-  <div class="stats">
-    <div class="stat"><div class="sl">Rank k</div><div class="sv green" id="sRank">—</div></div>
-    <div class="stat"><div class="sl">Energy captured</div><div class="sv blue" id="sEnergy">—</div></div>
-    <div class="stat"><div class="sl">Compression ratio</div><div class="sv pink" id="sRatio">—</div></div>
-    <div class="stat"><div class="sl">Max rank</div><div class="sv white" id="sMax">—</div></div>
-  </div>
-
-  <!-- Canvases -->
-  <div class="cvs">
-    <div class="cp">
-      <div class="cph"><span class="cl">Original</span><span class="cv" id="dimLbl">—</span></div>
-      <div class="ca">
-        <div class="ph" id="ph1"><div class="pi">📷</div><p>Upload to begin</p></div>
-        <canvas id="origCv" class="hidden"></canvas>
+    <div class="card-grid">
+      <div class="card" style="--accent-card: var(--accent1);">
+        <div class="card-icon">🎯</div>
+        <div class="card-title">The Goal</div>
+        <div class="card-body">Decompose any m×n matrix <strong>A</strong> into three matrices that reveal the hidden structure, importance, and geometry of the data.</div>
+        <span class="card-tag">Matrix Factorization</span>
+      </div>
+      <div class="card" style="--accent-card: var(--accent2);">
+        <div class="card-icon">💡</div>
+        <div class="card-title">The Analogy</div>
+        <div class="card-body">Like breaking a complex recipe into: <em>ingredients (V)</em>, <em>how much of each (Σ)</em>, and <em>how to combine them (U)</em>. You can recreate the dish — or simplify it.</div>
+        <span class="card-tag">Intuition</span>
+      </div>
+      <div class="card" style="--accent-card: var(--accent3);">
+        <div class="card-icon">⚡</div>
+        <div class="card-title">Why It Matters</div>
+        <div class="card-body">SVD is used everywhere: image compression, Netflix recommendations, NLP, noise removal. It's one of the most powerful tools in data science.</div>
+        <span class="card-tag">Applications</span>
       </div>
     </div>
-    <div class="cp">
-      <div class="cph"><span class="cl">Rank-k Reconstruction</span><span class="cv" id="kLbl">k = —</span></div>
-      <div class="ca">
-        <div class="ph" id="ph2"><div class="pi">🧬</div><p>Will appear here</p></div>
-        <canvas id="approxCv" class="hidden"></canvas>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ THE THREE MATRICES ══════════════════ -->
+<section id="matrices">
+  <div class="reveal">
+    <div class="sec-label">Section 02</div>
+    <h2 class="sec-title">The Three Matrices</h2>
+    <p class="sec-body">Every SVD breaks matrix A into exactly three components. Each has a precise geometric meaning.</p>
+
+    <!-- Visual equation -->
+    <div class="matrix-eq" id="matrixEqViz">
+
+      <!-- A -->
+      <div class="matrix-block">
+        <div class="matrix-label" style="color:var(--text);">A</div>
+        <div class="matrix-grid" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="matrix-cell" style="background:rgba(255,255,255,0.06); color:var(--text);">3</div>
+          <div class="matrix-cell" style="background:rgba(255,255,255,0.06); color:var(--text);">1</div>
+          <div class="matrix-cell" style="background:rgba(255,255,255,0.06); color:var(--text);">1</div>
+          <div class="matrix-cell" style="background:rgba(255,255,255,0.06); color:var(--text);">3</div>
+        </div>
+        <div style="font-size:11px; color:var(--text3); font-family:'Space Mono',monospace; margin-top:4px;">2 × 2</div>
+      </div>
+
+      <div class="mx-op">=</div>
+
+      <!-- U -->
+      <div class="matrix-block">
+        <div class="matrix-label" style="color:var(--accent1);">U</div>
+        <div class="matrix-grid" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="matrix-cell" style="background:rgba(124,106,247,0.15); color:var(--accent1);">.707</div>
+          <div class="matrix-cell" style="background:rgba(124,106,247,0.10); color:var(--accent1);">.707</div>
+          <div class="matrix-cell" style="background:rgba(124,106,247,0.10); color:var(--accent1);">.707</div>
+          <div class="matrix-cell" style="background:rgba(124,106,247,0.15); color:var(--accent1);">-.707</div>
+        </div>
+        <div style="font-size:11px; color:var(--text3); font-family:'Space Mono',monospace; margin-top:4px;">Left Singular Vectors</div>
+      </div>
+
+      <div class="mx-op">×</div>
+
+      <!-- Sigma -->
+      <div class="matrix-block">
+        <div class="matrix-label" style="color:var(--accent2);">Σ</div>
+        <div class="matrix-grid" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="matrix-cell" style="background:rgba(61,214,245,0.2); color:var(--accent2); font-weight:900;">4</div>
+          <div class="matrix-cell" style="background:rgba(61,214,245,0.04); color:var(--text3);">0</div>
+          <div class="matrix-cell" style="background:rgba(61,214,245,0.04); color:var(--text3);">0</div>
+          <div class="matrix-cell" style="background:rgba(61,214,245,0.12); color:var(--accent2); font-weight:900;">2</div>
+        </div>
+        <div style="font-size:11px; color:var(--text3); font-family:'Space Mono',monospace; margin-top:4px;">Singular Values</div>
+      </div>
+
+      <div class="mx-op">×</div>
+
+      <!-- Vt -->
+      <div class="matrix-block">
+        <div class="matrix-label" style="color:var(--accent3);">Vᵀ</div>
+        <div class="matrix-grid" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="matrix-cell" style="background:rgba(247,162,106,0.15); color:var(--accent3);">.707</div>
+          <div class="matrix-cell" style="background:rgba(247,162,106,0.10); color:var(--accent3);">.707</div>
+          <div class="matrix-cell" style="background:rgba(247,162,106,0.10); color:var(--accent3);">.707</div>
+          <div class="matrix-cell" style="background:rgba(247,162,106,0.15); color:var(--accent3);">-.707</div>
+        </div>
+        <div style="font-size:11px; color:var(--text3); font-family:'Space Mono',monospace; margin-top:4px;">Right Singular Vectors</div>
+      </div>
+    </div>
+
+    <div class="card-grid" style="margin-top:32px;">
+      <div class="card" style="--accent-card:var(--accent1); border-color:rgba(124,106,247,0.2);">
+        <div class="matrix-label" style="color:var(--accent1); font-size:28px; font-family:'Space Mono',monospace; margin-bottom:12px;">U</div>
+        <div class="card-title" style="color:var(--accent1);">Left Singular Vectors</div>
+        <div class="card-body">
+          Size: <strong>m × m</strong><br>
+          Columns are orthonormal (perpendicular unit vectors).<br><br>
+          <strong>Meaning:</strong> Captures the "row perspective" — how rows of A relate to each other. Think of it as a rotation/reflection applied to the rows.
+        </div>
+      </div>
+      <div class="card" style="--accent-card:var(--accent2); border-color:rgba(61,214,245,0.2);">
+        <div class="matrix-label" style="color:var(--accent2); font-size:28px; font-family:'Space Mono',monospace; margin-bottom:12px;">Σ</div>
+        <div class="card-title" style="color:var(--accent2);">Singular Values (Sigma)</div>
+        <div class="card-body">
+          Size: <strong>m × n</strong> (diagonal)<br>
+          Values: σ₁ ≥ σ₂ ≥ ... ≥ 0 (always non-negative, sorted)<br><br>
+          <strong>Meaning:</strong> The "importance ranking." Larger value = more influential direction. Zero values = redundant dimensions.
+        </div>
+      </div>
+      <div class="card" style="--accent-card:var(--accent3); border-color:rgba(247,162,106,0.2);">
+        <div class="matrix-label" style="color:var(--accent3); font-size:28px; font-family:'Space Mono',monospace; margin-bottom:12px;">Vᵀ</div>
+        <div class="card-title" style="color:var(--accent3);">Right Singular Vectors</div>
+        <div class="card-body">
+          Size: <strong>n × n</strong><br>
+          Rows of Vᵀ (= columns of V) are orthonormal.<br><br>
+          <strong>Meaning:</strong> Captures the "column perspective" — how columns of A relate. A rotation in the input space.
+        </div>
       </div>
     </div>
   </div>
+</section>
 
-  <!-- Controls -->
-  <div class="ctrls">
-    <div class="cr">
-      <span class="clbl">Rank k</span>
-      <input type="range" id="slider" min="1" max="50" value="5" disabled oninput="onSlide()">
-      <span class="rnum" id="rkNum">—</span>
+<div class="divider"></div>
+
+<!-- ══════════════════ STEPS ══════════════════ -->
+<section id="steps">
+  <div class="reveal">
+    <div class="sec-label">Section 03</div>
+    <h2 class="sec-title">Step-by-Step Computation</h2>
+    <p class="sec-body">We'll compute SVD on this 2×2 matrix by hand. Every step explained clearly.</p>
+
+    <div class="formula-box" style="margin-bottom:40px;">
+      A &nbsp;=&nbsp; <span style="color:var(--text);">[ 3 &nbsp; 1 ]<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[ 1 &nbsp; 3 ]</span>
     </div>
-    <div class="ebar">
-      <div class="elbl"><span>Energy captured by rank-k approximation</span><span id="ePct">—</span></div>
-      <div class="etrack"><div class="efill" id="eBar"></div></div>
+
+    <div class="steps">
+
+      <!-- Step 1 -->
+      <div class="step">
+        <div class="step-num-col">
+          <div class="step-num">1</div>
+          <div class="step-line"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Compute AᵀA</div>
+          <div class="step-desc">Multiply A-transpose by A. This gives a square, symmetric matrix — ideal for finding eigenvalues.</div>
+          <div class="code-block">
+<span class="c"># A-transpose × A</span>
+<span class="p">Aᵀ = [ 3  1 ]    A = [ 3  1 ]</span>
+<span class="p">     [ 1  3 ]        [ 1  3 ]</span>
+
+<span class="p">AᵀA = [ (3×3)+(1×1)  (3×1)+(1×3) ]</span>
+<span class="p">      [ (1×3)+(3×1)  (1×1)+(3×3) ]</span>
+
+<span class="p">AᵀA = <span class="n">[ 10  6 ]</span></span>
+<span class="p">      <span class="n">[  6 10 ]</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step">
+        <div class="step-num-col">
+          <div class="step-num" style="border-color:var(--accent2); color:var(--accent2); box-shadow:0 0 20px var(--glow2);">2</div>
+          <div class="step-line" style="background:linear-gradient(to bottom, var(--accent2), rgba(61,214,245,0.1));"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Find Eigenvalues → λ</div>
+          <div class="step-desc">Solve <code style="color:var(--accent2); font-size:13px;">det(AᵀA − λI) = 0</code>. Eigenvalues tell us how much "stretch" each direction has.</div>
+          <div class="code-block">
+<span class="c"># Characteristic equation</span>
+<span class="p">det([ 10-λ   6  ]) = 0</span>
+<span class="p">   ([   6  10-λ ])</span>
+
+<span class="p">(10-λ)² − 36 = 0</span>
+<span class="p">λ² − 20λ + 64 = 0</span>
+<span class="p">(λ − 16)(λ − 4) = 0</span>
+
+<span class="n">λ₁ = 16    λ₂ = 4</span>   <span class="c"># ← eigenvalues!</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step">
+        <div class="step-num-col">
+          <div class="step-num" style="border-color:var(--accent3); color:var(--accent3); box-shadow:0 0 20px rgba(247,162,106,0.3);">3</div>
+          <div class="step-line" style="background:linear-gradient(to bottom, var(--accent3), rgba(247,162,106,0.1));"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Compute Singular Values → Σ</div>
+          <div class="step-desc">Singular values are simply <span class="hl3">square roots of eigenvalues</span>. They fill the diagonal of Σ, sorted largest → smallest.</div>
+          <div class="code-block">
+<span class="p">σ₁ = √λ₁ = √<span class="n">16</span> = <span class="n">4.0</span></span>
+<span class="p">σ₂ = √λ₂ = √<span class="n">4</span>  = <span class="n">2.0</span></span>
+
+<span class="f">Σ</span> = <span class="n">[ 4.0   0  ]</span>
+    <span class="n">[  0   2.0 ]</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="step">
+        <div class="step-num-col">
+          <div class="step-num" style="border-color:var(--accent4); color:var(--accent4); box-shadow:0 0 20px rgba(106,247,162,0.3);">4</div>
+          <div class="step-line" style="background:linear-gradient(to bottom, var(--accent4), rgba(106,247,162,0.1));"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Find Eigenvectors → V</div>
+          <div class="step-desc">For each eigenvalue, solve <code style="color:var(--accent4); font-size:13px;">(AᵀA − λI)v = 0</code> to find eigenvectors. These become columns of V.</div>
+          <div class="code-block">
+<span class="c"># For λ₁ = 16:</span>
+<span class="p">(AᵀA − 16I)v = 0</span>
+<span class="p">[ -6   6 ] [v₁]   [0]</span>
+<span class="p">[  6  -6 ] [v₂] = [0]</span>
+<span class="p">→ v₁ = v₂  →  <span class="n">v₁ = [0.707, 0.707]</span></span>
+
+<span class="c"># For λ₂ = 4:</span>
+<span class="p">(AᵀA − 4I)v = 0</span>
+<span class="p">[ 6   6 ] [v₁]   [0]</span>
+<span class="p">[ 6   6 ] [v₂] = [0]</span>
+<span class="p">→ v₁ = −v₂ → <span class="n">v₂ = [0.707, -0.707]</span></span>
+
+<span class="c"># Therefore:</span>
+<span class="f">V</span>  = <span class="n">[ 0.707   0.707 ]</span>
+     <span class="n">[ 0.707  -0.707 ]</span>
+<span class="f">Vᵀ</span> = <span class="n">[ 0.707   0.707 ]</span>
+     <span class="n">[ 0.707  -0.707 ]</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div class="step">
+        <div class="step-num-col">
+          <div class="step-num" style="border-color:var(--accent5); color:var(--accent5); box-shadow:0 0 20px rgba(247,106,154,0.3);">5</div>
+          <div class="step-line" style="background:linear-gradient(to bottom, var(--accent5), rgba(247,106,154,0.0));"></div>
+        </div>
+        <div class="step-content">
+          <div class="step-title">Compute U (Left Singular Vectors)</div>
+          <div class="step-desc">Use the formula: <code style="color:var(--accent5); font-size:13px;">uᵢ = (1/σᵢ) × A × vᵢ</code></div>
+          <div class="code-block">
+<span class="c"># u₁: using σ₁=4, v₁=[0.707, 0.707]</span>
+<span class="p">u₁ = (1/4) × A × v₁</span>
+<span class="p">   = (1/4) × [ 3×0.707 + 1×0.707 ]</span>
+<span class="p">             [ 1×0.707 + 3×0.707 ]</span>
+<span class="p">   = (1/4) × [2.828, 2.828]</span>
+<span class="p">   = <span class="n">[0.707, 0.707]</span></span>
+
+<span class="c"># u₂: using σ₂=2, v₂=[0.707, -0.707]</span>
+<span class="p">u₂ = (1/2) × A × v₂</span>
+<span class="p">   = (1/2) × [1.414, -1.414]</span>
+<span class="p">   = <span class="n">[0.707, -0.707]</span></span>
+
+<span class="f">U</span> = <span class="n">[ 0.707   0.707 ]</span>
+    <span class="n">[ 0.707  -0.707 ]</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="step">
+        <div class="step-num-col">
+          <div class="step-num" style="border-color:#ffd700; color:#ffd700; box-shadow:0 0 20px rgba(255,215,0,0.3);">✓</div>
+        </div>
+        <div class="step-content">
+          <div class="step-title" style="color:#ffd700;">Final Result</div>
+          <div class="step-desc">Combining all three matrices:</div>
+          <div class="formula-box" style="text-align:left; font-size:12px; line-height:2.2;">
+            <span style="color:var(--text2);">A &nbsp;=&nbsp;</span><span style="color:var(--accent1);">U</span><span style="color:var(--text2);"> × </span><span style="color:var(--accent2);">Σ</span><span style="color:var(--text2);"> × </span><span style="color:var(--accent3);">Vᵀ</span><br>
+            <span style="color:var(--text3);">[ 3  1 ] &nbsp;=&nbsp;</span>
+            <span style="color:var(--accent1);">[ 0.707  0.707 ]</span>
+            <span style="color:var(--text3);"> × </span>
+            <span style="color:var(--accent2);">[ 4  0 ]</span>
+            <span style="color:var(--text3);"> × </span>
+            <span style="color:var(--accent3);">[ 0.707  0.707 ]</span><br>
+            <span style="color:var(--text3);">[ 1  3 ] &nbsp;&nbsp;&nbsp;&nbsp;</span>
+            <span style="color:var(--accent1);">[ 0.707 -0.707 ]</span>
+            <span style="color:var(--text3);">&nbsp;&nbsp;&nbsp;[ 0  2 ]</span>
+            <span style="color:var(--text3);">&nbsp;&nbsp;&nbsp;</span>
+            <span style="color:var(--accent3);">[ 0.707 -0.707 ]</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
+</section>
 
-  <!-- Spectrum -->
-  <div class="spec">
-    <div class="spech">
-      <span>Singular Value Spectrum &nbsp;σ₁ ≥ σ₂ ≥ … ≥ σₙ</span>
-      <span class="snote" id="specNote"></span>
+<div class="divider"></div>
+
+<!-- ══════════════════ INTERACTIVE ══════════════════ -->
+<section id="interactive">
+  <div class="reveal">
+    <div class="sec-label">Section 04</div>
+    <h2 class="sec-title">Try It Live</h2>
+    <p class="sec-body">Enter any 2×2 matrix and watch SVD computed in real time.</p>
+
+    <div class="interact-wrap">
+      <div class="interact-title">Interactive SVD Calculator</div>
+      <div class="interact-sub">Edit the matrix values and click Decompose</div>
+
+      <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+        <div>
+          <div style="font-family:'Space Mono',monospace; font-size:11px; color:var(--text3); margin-bottom:8px; letter-spacing:2px;">MATRIX A</div>
+          <div class="input-grid">
+            <input class="mat-input" id="a11" value="3">
+            <input class="mat-input" id="a12" value="1">
+            <input class="mat-input" id="a21" value="1">
+            <input class="mat-input" id="a22" value="3">
+          </div>
+        </div>
+        <button class="btn" id="btnDecompose">
+          ⚡ Decompose
+        </button>
+      </div>
+
+      <div id="svd-output" class="svd-result"></div>
+      <div id="svd-check" style="margin-top:16px; font-family:'Space Mono',monospace; font-size:12px; color:var(--accent4);"></div>
     </div>
-    <canvas id="specCanvas"></canvas>
   </div>
+</section>
 
-  <!-- Math -->
-  <div class="math">
-    <h3>The math behind the magic</h3>
-    <div class="eq">
-      A = <span class="uv">U</span><span class="sv">Σ</span><span class="vv">Vᵀ</span>
-      &nbsp;≈&nbsp; Σ<sub>i=1</sub><sup>k</sup>
-      <span class="sv">σᵢ</span>·<span class="uv">uᵢ</span><span class="vv">vᵢᵀ</span>
-      <br><span class="dim">Storage: full = m×n &nbsp;|&nbsp; rank-k = k(m+n+1) per channel</span>
+<div class="divider"></div>
+
+<!-- ══════════════════ TRUNCATED SVD ══════════════════ -->
+<section id="truncated">
+  <div class="reveal">
+    <div class="sec-label">Section 05</div>
+    <h2 class="sec-title">Truncated SVD</h2>
+    <p class="sec-body">
+      The <span class="hl">most powerful</span> trick in SVD: keep only the <strong>top-k singular values</strong> and throw the rest away. You get an approximation that uses far less memory — but preserves most of the information.
+    </p>
+
+    <div class="formula-box">
+      <strong>Aₖ = U[:, :k] × Σ[:k, :k] × Vᵀ[:k, :]</strong>
+      <div style="font-size:11px; color:var(--text3); margin-top:8px;">Low-rank approximation using only the top k singular values</div>
     </div>
-    <p>Each color channel (R, G, B) is a matrix. SVD splits it into ranked patterns ordered by energy. Natural images are <strong style="color:var(--accent)">low-rank by nature</strong> — smooth regions and spatial correlations mean singular values drop rapidly. Try the checkerboard: its spectrum is flat (high rank, incompressible) — the perfect contrast to prove you understand the theory!</p>
-  </div>
 
-</div>
+    <div style="margin-bottom:16px; font-family:'Syne',sans-serif; font-size:17px; font-weight:700;">
+      Singular Values as "Importance Bars" — hover to see values
+    </div>
+    <div class="sigma-viz" id="sigmaViz"></div>
+
+    <div class="interact-wrap" style="margin-top:32px;">
+      <div class="interact-title">Variance Explained Calculator</div>
+      <div class="interact-sub">See how much information each component captures</div>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+        <input id="sigmaInput" class="mat-input" style="max-width:320px; font-size:13px; text-align:left; padding:12px 16px;" placeholder="Enter singular values e.g: 4, 2, 0.5" value="4, 2, 0.5">
+        <button class="btn" id="btnVariance">Calculate</button>
+      </div>
+      <div id="variance-out"></div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ APPLICATIONS ══════════════════ -->
+<section id="applications">
+  <div class="reveal">
+    <div class="sec-label">Section 06</div>
+    <h2 class="sec-title">Where SVD is Used</h2>
+    <p class="sec-body">SVD shows up everywhere in data science, machine learning, and engineering.</p>
+
+    <div class="app-grid">
+      <div class="app-card" style="--ac:var(--accent1);">
+        <div class="app-icon">🖼️</div>
+        <div class="app-name">Image Compression</div>
+        <div class="app-desc">A 1000×1000 image becomes three smaller matrices. Keep top-50 singular values → 95% visual quality at 10% storage.</div>
+        <div class="app-tag">// numpy.linalg.svd(image)</div>
+      </div>
+      <div class="app-card" style="--ac:var(--accent2);">
+        <div class="app-icon">🎬</div>
+        <div class="app-name">Recommender Systems</div>
+        <div class="app-desc">Netflix, Spotify use SVD on user-item matrices to find hidden preference patterns. Missing ratings are predicted from low-rank structure.</div>
+        <div class="app-tag">// collaborative filtering</div>
+      </div>
+      <div class="app-card" style="--ac:var(--accent3);">
+        <div class="app-icon">📝</div>
+        <div class="app-name">NLP — Latent Semantic Analysis</div>
+        <div class="app-desc">SVD on document-term matrices finds hidden topics. "Car" and "automobile" become close in the topic space — even if they never co-occur.</div>
+        <div class="app-tag">// sklearn TruncatedSVD</div>
+      </div>
+      <div class="app-card" style="--ac:var(--accent4);">
+        <div class="app-icon">🔇</div>
+        <div class="app-name">Noise Reduction</div>
+        <div class="app-desc">Noise hides in small singular values. Discard them and the signal becomes cleaner. Used in medical imaging, audio, sensor data.</div>
+        <div class="app-tag">// EEG / ECG denoising</div>
+      </div>
+      <div class="app-card" style="--ac:var(--accent5);">
+        <div class="app-icon">📊</div>
+        <div class="app-name">PCA — Dimensionality Reduction</div>
+        <div class="app-desc">PCA is literally SVD on the centered data matrix. sklearn's PCA uses SVD internally — it's more numerically stable than the covariance approach.</div>
+        <div class="app-tag">// sklearn.decomposition.PCA</div>
+      </div>
+      <div class="app-card" style="--ac:#ffd700;">
+        <div class="app-icon">🔬</div>
+        <div class="app-name">Pseudoinverse (Pinv)</div>
+        <div class="app-desc">SVD gives the Moore-Penrose pseudoinverse: A⁺ = V × Σ⁺ × Uᵀ. Used to solve least-squares problems even when A is not invertible.</div>
+        <div class="app-tag">// numpy.linalg.pinv</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════════════════ PYTHON CODE ══════════════════ -->
+<section id="code">
+  <div class="reveal">
+    <div class="sec-label">Section 07</div>
+    <h2 class="sec-title">Python Code</h2>
+    <p class="sec-body">Ready-to-run examples. Copy, paste, execute.</p>
+
+    <h3 style="font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:16px; color:var(--accent1);">Basic SVD with NumPy</h3>
+    <div class="code-block" style="margin-bottom:32px;">
+      <span class="code-label">python</span>
+<span class="k">import</span> <span class="p">numpy as np</span>
+
+<span class="c"># Define your matrix</span>
+<span class="v">A</span> = np.<span class="f">array</span>([[<span class="n">3</span>, <span class="n">1</span>],
+              [<span class="n">1</span>, <span class="n">3</span>]])
+
+<span class="c"># SVD — one line!</span>
+<span class="v">U</span>, <span class="v">sigma</span>, <span class="v">Vt</span> = np.linalg.<span class="f">svd</span>(<span class="v">A</span>)
+
+<span class="f">print</span>(<span class="s">"U (Left Singular Vectors):"</span>)
+<span class="f">print</span>(<span class="v">U</span>.<span class="f">round</span>(<span class="n">3</span>))
+<span class="f">print</span>(<span class="s">"\nSingular Values:"</span>, <span class="v">sigma</span>.<span class="f">round</span>(<span class="n">3</span>))
+<span class="f">print</span>(<span class="s">"\nVt (Right Vectors Transposed):"</span>)
+<span class="f">print</span>(<span class="v">Vt</span>.<span class="f">round</span>(<span class="n">3</span>))
+
+<span class="c"># Reconstruct A from U, Σ, Vt</span>
+<span class="v">Sigma</span> = np.<span class="f">diag</span>(<span class="v">sigma</span>)
+<span class="v">A_back</span> = <span class="v">U</span> @ <span class="v">Sigma</span> @ <span class="v">Vt</span>
+<span class="f">print</span>(<span class="s">"\nReconstructed A:"</span>)
+<span class="f">print</span>(<span class="v">A_back</span>.<span class="f">round</span>(<span class="n">3</span>))  <span class="c"># should match original</span>
+    </div>
+
+    <h3 style="font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:16px; color:var(--accent2);">Truncated SVD with scikit-learn</h3>
+    <div class="code-block" style="margin-bottom:32px;">
+      <span class="code-label">python</span>
+<span class="k">from</span> <span class="p">sklearn.decomposition</span> <span class="k">import</span> <span class="p">TruncatedSVD</span>
+<span class="k">import</span> <span class="p">numpy as np</span>
+
+<span class="c"># Simulate a document-term matrix (100 docs, 50 words)</span>
+np.random.<span class="f">seed</span>(<span class="n">42</span>)
+<span class="v">A</span> = np.random.<span class="f">rand</span>(<span class="n">100</span>, <span class="n">50</span>)
+
+<span class="c"># Keep only top 5 components</span>
+<span class="v">svd</span> = <span class="f">TruncatedSVD</span>(n_components=<span class="n">5</span>, random_state=<span class="n">42</span>)
+<span class="v">A_reduced</span> = <span class="v">svd</span>.<span class="f">fit_transform</span>(<span class="v">A</span>)
+
+<span class="f">print</span>(<span class="s">f"Original shape: {<span class="v">A</span>.shape}"</span>)        <span class="c"># (100, 50)</span>
+<span class="f">print</span>(<span class="s">f"Compressed shape: {<span class="v">A_reduced</span>.shape}"</span>) <span class="c"># (100, 5)</span>
+
+<span class="v">variance</span> = <span class="v">svd</span>.explained_variance_ratio_
+<span class="f">print</span>(<span class="s">f"Total variance explained: {<span class="f">sum</span>(<span class="v">variance</span>)*100:.1f}%"</span>)
+    </div>
+
+    <h3 style="font-family:'Syne',sans-serif; font-size:18px; font-weight:700; margin-bottom:16px; color:var(--accent3);">Image Compression</h3>
+    <div class="code-block">
+      <span class="code-label">python</span>
+<span class="k">import</span> <span class="p">numpy as np</span>
+<span class="k">import</span> <span class="p">matplotlib.pyplot as plt</span>
+
+<span class="c"># Load image as grayscale matrix</span>
+<span class="v">img</span> = plt.<span class="f">imread</span>(<span class="s">'photo.png'</span>)[..., <span class="n">0</span>]  <span class="c"># shape: (H, W)</span>
+
+<span class="c"># Decompose</span>
+<span class="v">U</span>, <span class="v">sigma</span>, <span class="v">Vt</span> = np.linalg.<span class="f">svd</span>(<span class="v">img</span>, full_matrices=<span class="k">False</span>)
+
+<span class="c"># Reconstruct at different compression levels</span>
+<span class="k">def</span> <span class="f">compress</span>(<span class="v">U</span>, <span class="v">sigma</span>, <span class="v">Vt</span>, k):
+    <span class="k">return</span> <span class="v">U</span>[:, :<span class="v">k</span>] @ np.<span class="f">diag</span>(<span class="v">sigma</span>[:<span class="v">k</span>]) @ <span class="v">Vt</span>[:<span class="v">k</span>, :]
+
+<span class="k">for</span> <span class="v">k</span> <span class="k">in</span> [<span class="n">1</span>, <span class="n">5</span>, <span class="n">20</span>, <span class="n">50</span>, <span class="n">100</span>]:
+    <span class="v">approx</span> = <span class="f">compress</span>(<span class="v">U</span>, <span class="v">sigma</span>, <span class="v">Vt</span>, <span class="v">k</span>)
+    <span class="v">pct</span> = <span class="f">sum</span>(<span class="v">sigma</span>[:<span class="v">k</span>]**<span class="n">2</span>) / <span class="f">sum</span>(<span class="v">sigma</span>**<span class="n">2</span>) * <span class="n">100</span>
+    <span class="f">print</span>(<span class="s">f"k={<span class="v">k</span>:3d}: {<span class="v">pct</span>:.1f}% quality retained"</span>)
+    </div>
+
+    <!-- Quick ref table -->
+    <div style="margin-top:48px;">
+      <h3 style="font-family:'Syne',sans-serif; font-size:22px; font-weight:700; margin-bottom:20px;">Quick Reference</h3>
+      <table class="comp">
+        <thead>
+          <tr>
+            <th>Concept</th><th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>A = U×Σ×Vᵀ</td><td>Any matrix A decomposes into left vectors, singular values, right vectors</td></tr>
+          <tr><td>U</td><td>m×m orthonormal — row-space directions</td></tr>
+          <tr><td>Σ</td><td>m×n diagonal — singular values σ₁ ≥ σ₂ ≥ ... ≥ 0, sorted by importance</td></tr>
+          <tr><td>Vᵀ</td><td>n×n orthonormal — column-space directions</td></tr>
+          <tr><td>σᵢ = √λᵢ</td><td>Singular values are square roots of eigenvalues of AᵀA</td></tr>
+          <tr><td>Truncated SVD</td><td>Keep top-k singular values for compression and noise removal</td></tr>
+          <tr><td>Explained %</td><td>σᵢ² / Σσ² × 100 — variance captured by each component</td></tr>
+          <tr><td>SVD vs PCA</td><td>PCA = SVD on mean-centered data. Same math, different framing</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  SVD — Singular Value Decomposition &nbsp;|&nbsp; Data Science Series &nbsp;|&nbsp; Interactive Visual Guide
+</footer>
 
 <script>
-// ── State
-var svd = null, curK = 5, maxK = 0;
-var MAX_DIM = 150; // max pixels on longest side for SVD (larger = slower but more accurate)
+// ─── SCROLL REVEAL ───
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.08 });
+reveals.forEach(r => observer.observe(r));
 
-// ── DOM refs
-var dropZone  = document.getElementById('dropZone');
-var fileInput = document.getElementById('fileInput');
-var slider    = document.getElementById('slider');
-var origCv    = document.getElementById('origCv');
-var approxCv  = document.getElementById('approxCv');
-var origCtx   = origCv.getContext('2d');
-var approxCtx = approxCv.getContext('2d');
-var specCv    = document.getElementById('specCanvas');
-var specCtx   = specCv.getContext('2d');
-var statusBar = document.getElementById('statusBar');
-var statusMsg = document.getElementById('statusMsg');
-var spinner   = document.getElementById('spinner');
-var resetBtn  = document.getElementById('resetBtn');
-var sizeWarn  = document.getElementById('sizeWarn');
+// ─── SIGMA BARS ───
+const sigmas = [
+  { val: 28.3, pct: 99.0, label: 'σ₁' },
+  { val: 2.1,  pct: 0.55, label: 'σ₂' },
+  { val: 0.9,  pct: 0.25, label: 'σ₃' },
+  { val: 0.3,  pct: 0.12, label: 'σ₄' },
+  { val: 0.1,  pct: 0.08, label: 'σ₅' },
+];
+const colors = ['#7c6af7','#3dd6f5','#f7a26a','#6af7a2','#f76a9a'];
+const maxH = 200;
+const viz = document.getElementById('sigmaViz');
+sigmas.forEach((s, i) => {
+  const h = Math.max(12, (s.val / 28.3) * maxH);
+  const wrap = document.createElement('div');
+  wrap.className = 'sigma-bar-wrap';
+  wrap.innerHTML = `
+    <div class="sigma-val">${s.pct}%</div>
+    <div class="sigma-bar" style="height:${h}px; background:${colors[i]}; opacity:${0.4 + i*0.05};"
+         title="σ = ${s.val}, explains ${s.pct}% of variance"></div>
+    <div class="sigma-idx">${s.label}</div>
+    <div class="sigma-val">${s.val}</div>
+  `;
+  viz.appendChild(wrap);
+  // animate in
+  const bar = wrap.querySelector('.sigma-bar');
+  bar.style.height = '0';
+  setTimeout(() => { bar.style.height = h + 'px'; }, 300 + i * 120);
+});
 
-// ── Status helpers
-function setStatus(msg, loading) {
-  statusMsg.textContent = msg;
-  statusBar.className = 'show' + (loading === false ? ' err' : '');
-  spinner.className   = 'spin' + (loading === false || loading === 'done' ? ' hide' : '');
-  if (loading === false) {
-    setTimeout(function(){ statusBar.className = ''; }, 3000);
+// ─── SVD CALCULATOR ───
+function computeSVD() {
+  const a = parseFloat(document.getElementById('a11').value) || 0;
+  const b = parseFloat(document.getElementById('a12').value) || 0;
+  const c = parseFloat(document.getElementById('a21').value) || 0;
+  const d = parseFloat(document.getElementById('a22').value) || 0;
+
+  // For 2x2: A = [[a,b],[c,d]]
+  // AᵀA
+  const ata = [
+    [a*a + c*c, a*b + c*d],
+    [a*b + c*d, b*b + d*d]
+  ];
+
+  // Eigenvalues of AᵀA: λ² - trace*λ + det = 0
+  const tr = ata[0][0] + ata[1][1];
+  const det = ata[0][0]*ata[1][1] - ata[0][1]*ata[1][0];
+  const disc = Math.sqrt(Math.max(0, tr*tr/4 - det));
+  const l1 = tr/2 + disc;
+  const l2 = tr/2 - disc;
+
+  const s1 = Math.sqrt(Math.max(0, l1));
+  const s2 = Math.sqrt(Math.max(0, l2));
+
+  // Eigenvectors of AᵀA for V
+  let v1x, v1y, v2x, v2y;
+  if (Math.abs(ata[0][1]) > 1e-10) {
+    v1x = ata[0][1]; v1y = l1 - ata[0][0];
+    const n1 = Math.sqrt(v1x*v1x + v1y*v1y);
+    v1x /= n1; v1y /= n1;
+    v2x = -v1y; v2y = v1x;
+  } else {
+    v1x = 1; v1y = 0; v2x = 0; v2y = 1;
   }
-}
-function hideStatus() {
-  statusBar.className = '';
-}
 
-// ── Upload: click
-dropZone.addEventListener('click', function(e) {
-  if (e.target.classList.contains('sbtn')) return;
-  fileInput.click();
+  // U = (1/σ) * A * v
+  let u1x, u1y, u2x, u2y;
+  if (s1 > 1e-10) {
+    u1x = (a*v1x + b*v1y) / s1;
+    u1y = (c*v1x + d*v1y) / s1;
+  } else { u1x = 1; u1y = 0; }
+
+  if (s2 > 1e-10) {
+    u2x = (a*v2x + b*v2y) / s2;
+    u2y = (c*v2x + d*v2y) / s2;
+  } else { u2x = 0; u2y = 1; }
+
+  const fmt = n => n.toFixed(3);
+  const pct1 = (s1*s1/(s1*s1+s2*s2)*100).toFixed(1);
+  const pct2 = (s2*s2/(s1*s1+s2*s2)*100).toFixed(1);
+
+  const out = document.getElementById('svd-output');
+  out.innerHTML = `
+    <div class="result-panel" style="border-color:rgba(124,106,247,0.3)">
+      <div class="result-label" style="color:var(--accent1);">U — Left Vectors</div>
+      <div class="result-matrix">
+        [ ${fmt(u1x)} &nbsp; ${fmt(u2x)} ]<br>
+        [ ${fmt(u1y)} &nbsp; ${fmt(u2y)} ]
+      </div>
+    </div>
+    <div class="result-panel" style="border-color:rgba(61,214,245,0.3)">
+      <div class="result-label" style="color:var(--accent2);">Σ — Singular Values</div>
+      <div class="result-matrix">
+        σ₁ = ${fmt(s1)} (${pct1}%)<br>
+        σ₂ = ${fmt(s2)} (${pct2}%)
+      </div>
+      <div style="margin-top:10px; font-size:11px; color:var(--text3);">% of variance explained</div>
+    </div>
+    <div class="result-panel" style="border-color:rgba(247,162,106,0.3)">
+      <div class="result-label" style="color:var(--accent3);">Vᵀ — Right Vectors</div>
+      <div class="result-matrix">
+        [ ${fmt(v1x)} &nbsp; ${fmt(v1y)} ]<br>
+        [ ${fmt(v2x)} &nbsp; ${fmt(v2y)} ]
+      </div>
+    </div>
+  `;
+
+  const chk = document.getElementById('svd-check');
+  chk.style.display = 'block';
+  chk.innerHTML = `✓ SVD complete — σ₁=${fmt(s1)}, σ₂=${fmt(s2)} | First component explains ${pct1}% of variance`;
+}
+// Wire up buttons with addEventListener (onclick blocked in sandboxed HTML)
+document.getElementById('btnDecompose').addEventListener('click', computeSVD);
+
+// Also recompute live as user types
+['a11','a12','a21','a22'].forEach(id => {
+  document.getElementById(id).addEventListener('input', computeSVD);
 });
-fileInput.addEventListener('change', function() {
-  if (fileInput.files && fileInput.files[0]) handleFile(fileInput.files[0]);
-  fileInput.value = ''; // reset so same file can be re-selected
-});
 
-// ── Upload: drag & drop
-dropZone.addEventListener('dragenter', function(e){ e.preventDefault(); e.stopPropagation(); dropZone.classList.add('over'); });
-dropZone.addEventListener('dragover',  function(e){ e.preventDefault(); e.stopPropagation(); e.dataTransfer.dropEffect='copy'; dropZone.classList.add('over'); });
-dropZone.addEventListener('dragleave', function(e){ e.preventDefault(); e.stopPropagation(); if(!dropZone.contains(e.relatedTarget)) dropZone.classList.remove('over'); });
-dropZone.addEventListener('drop', function(e) {
-  e.preventDefault(); e.stopPropagation();
-  dropZone.classList.remove('over');
-  var files = e.dataTransfer.files;
-  if (!files || files.length === 0) { setStatus('No file detected — try clicking to browse', false); return; }
-  var file = files[0];
-  if (!file.type.startsWith('image/')) { setStatus('Please drop an image file (JPG, PNG, WebP…)', false); return; }
-  handleFile(file);
-});
-// fallback: whole document drop
-document.addEventListener('dragover', function(e){ e.preventDefault(); });
-document.addEventListener('drop', function(e){
-  e.preventDefault();
-  var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) handleFile(file);
-});
+computeSVD(); // run on load
 
-// ── Handle file via FileReader (works in all iframe/sandbox contexts)
-function handleFile(file) {
-  sizeWarn.className = '';
-  setStatus('Reading "' + file.name + '" (' + (file.size/1024).toFixed(0) + ' KB)…', true);
-  var reader = new FileReader();
-  reader.onload  = function(ev){ processDataURL(ev.target.result, file.name); };
-  reader.onerror = function()  { setStatus('Could not read file — try another format', false); };
-  reader.readAsDataURL(file);
-}
+// ─── VARIANCE CALCULATOR ───
+function calcVariance() {
+  const raw = document.getElementById('sigmaInput').value;
+  const sigmas = raw.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n) && n >= 0);
+  if (sigmas.length === 0) return;
 
-// ── Core: load image → downsample → SVD
-function processDataURL(dataUrl, name) {
-  setStatus('Decoding image…', true);
-  var img = new Image();
-  img.onload = function() {
-    var origW = img.width, origH = img.height;
+  const sq = sigmas.map(s => s*s);
+  const total = sq.reduce((a,b) => a+b, 0);
 
-    // Compute display canvas size (show original-aspect, max 100% of panel)
-    var dw = origW, dh = origH;
+  const colors2 = ['#7c6af7','#3dd6f5','#f7a26a','#6af7a2','#f76a9a','#ffd700','#ff6b6b'];
+  let cumulative = 0;
+  let html = `<div style="display:flex; flex-direction:column; gap:8px;">`;
 
-    // Compute SVD canvas size — keep it ≤ MAX_DIM on longest side
-    var sw = origW, sh = origH;
-    if (sw > MAX_DIM || sh > MAX_DIM) {
-      var sc = MAX_DIM / Math.max(sw, sh);
-      sw = Math.max(2, Math.round(sw * sc));
-      sh = Math.max(2, Math.round(sh * sc));
-    }
-
-    // Warn if we downscaled a lot
-    if (origW > MAX_DIM || origH > MAX_DIM) {
-      sizeWarn.className = 'show';
-      sizeWarn.textContent = '⚠ Image resized from ' + origW + '×' + origH + ' → ' + sw + '×' + sh + ' for SVD speed. Compression stats reflect the resized version.';
-    }
-
-    // Draw original at display size
-    origCv.width  = dw; origCv.height = dh;
-    origCtx.drawImage(img, 0, 0, dw, dh);
-    document.getElementById('ph1').classList.add('hidden');
-    origCv.classList.remove('hidden');
-    document.getElementById('dimLbl').textContent = origW + '×' + origH;
-
-    // Draw SVD working copy at sw×sh
-    var svdCv = document.createElement('canvas');
-    svdCv.width = sw; svdCv.height = sh;
-    svdCv.getContext('2d').drawImage(img, 0, 0, sw, sh);
-    var px = svdCv.getContext('2d').getImageData(0, 0, sw, sh).data;
-
-    // Build channel matrices
-    var Rm = [], Gm = [], Bm = [];
-    for (var r = 0; r < sh; r++) {
-      Rm[r] = new Array(sw);
-      Gm[r] = new Array(sw);
-      Bm[r] = new Array(sw);
-      for (var c = 0; c < sw; c++) {
-        var idx = (r * sw + c) * 4;
-        Rm[r][c] = px[idx]   / 255;
-        Gm[r][c] = px[idx+1] / 255;
-        Bm[r][c] = px[idx+2] / 255;
-      }
-    }
-
-    setStatus('Computing SVD on ' + sw + '×' + sh + ' — please wait…', true);
-
-    // Yield to browser to render status, then crunch
-    setTimeout(function() {
-      try {
-        var t0 = Date.now();
-        var svdR = numeric.svd(Rm);
-        var svdG = numeric.svd(Gm);
-        var svdB = numeric.svd(Bm);
-        var elapsed = ((Date.now() - t0)/1000).toFixed(1);
-
-        svd = {
-          R: { U: svdR.U, S: svdR.S, V: svdR.V, m: sh, n: sw },
-          G: { U: svdG.U, S: svdG.S, V: svdG.V, m: sh, n: sw },
-          B: { U: svdB.U, S: svdB.S, V: svdB.V, m: sh, n: sw }
-        };
-
-        maxK = Math.min(sh, sw, svd.R.S.length);
-        slider.max   = maxK;
-        slider.disabled = false;
-        curK = Math.min(10, maxK);
-        slider.value = curK;
-
-        // approxCv renders at SVD size but display scales via CSS max-width
-        approxCv.width  = sw;
-        approxCv.height = sh;
-        document.getElementById('ph2').classList.add('hidden');
-        approxCv.classList.remove('hidden');
-        document.getElementById('sMax').textContent = maxK;
-
-        // Show reset button
-        resetBtn.className = 'show';
-        setStatus('Done in ' + elapsed + 's — drag the rank slider!', 'done');
-        setTimeout(hideStatus, 2500);
-
-        drawSpectrum();
-        renderApprox(curK);
-      } catch(err) {
-        setStatus('SVD failed: ' + err.message, false);
-      }
-    }, 80);
-  };
-  img.onerror = function() { setStatus('Could not decode image — unsupported format?', false); };
-  img.src = dataUrl;
-}
-
-// ── Reconstruct rank-k approximation
-function reconstruct(ch, k) {
-  var U = ch.U, S = ch.S, V = ch.V, m = ch.m, n = ch.n;
-  var res = [];
-  for (var r = 0; r < m; r++) res[r] = new Float32Array(n);
-  var kk = Math.min(k, S.length);
-  for (var i = 0; i < kk; i++) {
-    var si = S[i];
-    for (var r = 0; r < m; r++) {
-      var uval = U[r][i] * si;
-      var row  = res[r];
-      for (var c = 0; c < n; c++) row[c] += uval * V[c][i];
-    }
-  }
-  return res;
-}
-
-function renderApprox(k) {
-  if (!svd) return;
-  var ch  = svd.R, m = ch.m, n = ch.n;
-  var rr  = reconstruct(svd.R, k);
-  var gg  = reconstruct(svd.G, k);
-  var bb  = reconstruct(svd.B, k);
-  var id  = approxCtx.createImageData(n, m);
-  var dat = id.data;
-  for (var r = 0; r < m; r++) {
-    var rowR = rr[r], rowG = gg[r], rowB = bb[r];
-    for (var c = 0; c < n; c++) {
-      var idx = (r * n + c) * 4;
-      dat[idx]   = Math.max(0, Math.min(255, rowR[c]*255+.5)|0);
-      dat[idx+1] = Math.max(0, Math.min(255, rowG[c]*255+.5)|0);
-      dat[idx+2] = Math.max(0, Math.min(255, rowB[c]*255+.5)|0);
-      dat[idx+3] = 255;
-    }
-  }
-  approxCtx.putImageData(id, 0, 0);
-
-  // Stats
-  var num = 0, den = 0;
-  ['R','G','B'].forEach(function(ch) {
-    var S = svd[ch].S;
-    for (var i = 0; i < S.length; i++) {
-      var v = S[i]*S[i]; den += v;
-      if (i < k) num += v;
-    }
+  sigmas.forEach((s, i) => {
+    const pct = (sq[i] / total * 100);
+    cumulative += pct;
+    const col = colors2[i % colors2.length];
+    html += `
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="font-family:'Space Mono',monospace; font-size:11px; color:${col}; width:24px;">σ${i+1}</div>
+        <div style="flex:1; background:var(--bg); border-radius:6px; height:20px; overflow:hidden; border:1px solid var(--border);">
+          <div style="width:${pct}%; height:100%; background:${col}; border-radius:6px; transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1); animation: growBar 0.6s ${i*0.1}s ease both;"></div>
+        </div>
+        <div style="font-family:'Space Mono',monospace; font-size:11px; color:var(--text2); min-width:80px;">${pct.toFixed(1)}% (cum: ${cumulative.toFixed(1)}%)</div>
+      </div>
+    `;
   });
-  var energy = den ? num/den : 0;
-  var ratio  = (3*k*(m+n+1)) / (3*m*n);
 
-  document.getElementById('sRank').textContent   = k;
-  document.getElementById('sEnergy').textContent = (energy*100).toFixed(1)+'%';
-  document.getElementById('sRatio').textContent  = (ratio*100).toFixed(1)+'%';
-  document.getElementById('kLbl').textContent    = 'k = '+k;
-  document.getElementById('ePct').textContent    = (energy*100).toFixed(1)+'%';
-  document.getElementById('eBar').style.width    = Math.min(100,energy*100).toFixed(1)+'%';
-  document.getElementById('rkNum').textContent   = k;
+  html += `</div>`;
+  document.getElementById('variance-out').innerHTML = html;
 }
 
-// ── Spectrum chart
-function drawSpectrum() {
-  if (!svd) return;
-  var dpr = window.devicePixelRatio || 1;
-  var CW  = specCv.offsetWidth || 800, CH = 110;
-  specCv.width = CW*dpr; specCv.height = CH*dpr;
-  specCtx.scale(dpr, dpr);
-
-  var S   = svd.R.S, len = S.length;
-  var sig = [];
-  for (var i=0;i<len;i++) sig.push((S[i]+svd.G.S[i]+svd.B.S[i])/3);
-  var maxS = sig[0]||1;
-  var pad  = {l:32,r:8,t:8,b:20};
-  var cW   = CW-pad.l-pad.r, cH = CH-pad.t-pad.b;
-
-  specCtx.fillStyle='#07070e'; specCtx.fillRect(0,0,CW,CH);
-  specCtx.strokeStyle='rgba(255,255,255,.04)'; specCtx.lineWidth=1;
-  for (var g=0;g<=4;g++){
-    var y=pad.t+cH-g/4*cH;
-    specCtx.beginPath(); specCtx.moveTo(pad.l,y); specCtx.lineTo(pad.l+cW,y); specCtx.stroke();
-    specCtx.fillStyle='rgba(255,255,255,.7)'; specCtx.font='11px monospace';
-    specCtx.fillText(g*25+'%',2,y+3);
-  }
-  var bw = Math.max(1.2, cW/len - 0.6);
-  for (var i=0;i<len;i++){
-    var x=pad.l+(i/len)*cW, bh=(sig[i]/maxS)*cH;
-    var t=len>1?i/(len-1):0;
-    var r2=Math.round(91+(124-91)*t), g2=Math.round(143+(245-143)*t), b2=Math.round(255+(176-255)*t);
-    specCtx.fillStyle='rgba('+r2+','+g2+','+b2+','+(i<curK?.9:.15)+')';
-    specCtx.fillRect(x,pad.t+cH-bh,bw,bh);
-  }
-  var cutX=pad.l+(curK/len)*cW;
-  specCtx.save();
-  specCtx.strokeStyle='rgba(255,107,157,.8)'; specCtx.lineWidth=1.5; specCtx.setLineDash([4,3]);
-  specCtx.beginPath(); specCtx.moveTo(cutX,pad.t); specCtx.lineTo(cutX,pad.t+cH); specCtx.stroke();
-  specCtx.restore();
-  specCtx.fillStyle='rgba(255,107,157,.9)'; specCtx.font='13px monospace';
-  specCtx.fillText('k='+curK, Math.min(cutX+4,CW-38), pad.t+14);
-  specCtx.fillStyle='rgba(255,255,255,.7)'; specCtx.font='11px monospace';
-  specCtx.fillText('singular value index →',pad.l,CH-4);
-  document.getElementById('specNote').textContent='top-'+curK+' of '+len;
-}
-
-function onSlide(){
-  curK = parseInt(slider.value);
-  renderApprox(curK);
-  drawSpectrum();
-}
-
-// ── Reset
-function doReset() {
-  svd = null; curK = 5; maxK = 0;
-  // canvases
-  origCv.classList.add('hidden');
-  approxCv.classList.add('hidden');
-  document.getElementById('ph1').classList.remove('hidden');
-  document.getElementById('ph2').classList.remove('hidden');
-  // stats
-  ['sRank','sEnergy','sRatio','sMax'].forEach(function(id){ document.getElementById(id).textContent='—'; });
-  document.getElementById('dimLbl').textContent='—';
-  document.getElementById('kLbl').textContent='k = —';
-  document.getElementById('ePct').textContent='—';
-  document.getElementById('rkNum').textContent='—';
-  document.getElementById('eBar').style.width='0%';
-  // controls
-  slider.value=5; slider.disabled=true;
-  // spectrum
-  specCtx.clearRect(0,0,specCv.width,specCv.height);
-  document.getElementById('specNote').textContent='';
-  // ui
-  resetBtn.className='';
-  sizeWarn.className='';
-  hideStatus();
-  // open file picker immediately for new image
-  fileInput.click();
-}
-
-// ── Sample generators
-function loadSample(type){
-  sizeWarn.className='';
-  var sz=90, cv=document.createElement('canvas');
-  cv.width=sz; cv.height=sz;
-  var ctx=cv.getContext('2d');
-  if(type==='gradient'){
-    var g=ctx.createLinearGradient(0,0,sz,sz);
-    g.addColorStop(0,'#ff6b9d'); g.addColorStop(.5,'#7cf5b0'); g.addColorStop(1,'#5b8fff');
-    ctx.fillStyle=g; ctx.fillRect(0,0,sz,sz);
-    var g2=ctx.createRadialGradient(sz/2,sz/3,0,sz/2,sz/3,sz*.6);
-    g2.addColorStop(0,'rgba(255,255,255,.35)'); g2.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=g2; ctx.fillRect(0,0,sz,sz);
-  } else if(type==='checker'){
-    for(var y=0;y<sz;y+=8) for(var x=0;x<sz;x+=8){
-      ctx.fillStyle=(Math.floor(x/8)+Math.floor(y/8))%2===0?'#ddd':'#111';
-      ctx.fillRect(x,y,8,8);
-    }
-  } else if(type==='photo'){
-    var sky=ctx.createLinearGradient(0,0,0,sz*.55);
-    sky.addColorStop(0,'#1a3a6c'); sky.addColorStop(1,'#87ceeb');
-    ctx.fillStyle=sky; ctx.fillRect(0,0,sz,sz*.55);
-    ctx.fillStyle='#5a9e4a'; ctx.fillRect(0,sz*.55,sz,sz*.45);
-    ctx.fillStyle='#f4c28a';
-    ctx.beginPath(); ctx.ellipse(sz/2,sz*.35,sz*.18,sz*.22,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#3a1a0a';
-    ctx.beginPath(); ctx.ellipse(sz/2,sz*.2,sz*.19,sz*.13,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='#2244cc';
-    [sz*.43,sz*.57].forEach(function(ex){ctx.beginPath();ctx.arc(ex,sz*.34,3.5,0,Math.PI*2);ctx.fill();});
-    ctx.strokeStyle='#b06050'; ctx.lineWidth=1.8;
-    ctx.beginPath(); ctx.arc(sz/2,sz*.42,7,0,Math.PI); ctx.stroke();
-    ctx.fillStyle='#d04830'; ctx.fillRect(sz/2-13,sz*.57,26,sz*.28);
-  } else if(type==='landscape'){
-    var ls=ctx.createLinearGradient(0,0,0,sz*.6);
-    ls.addColorStop(0,'#0d1b3e'); ls.addColorStop(1,'#4a90b8');
-    ctx.fillStyle=ls; ctx.fillRect(0,0,sz,sz*.6);
-    ctx.fillStyle='#4a7a42'; ctx.beginPath(); ctx.moveTo(0,sz*.6); ctx.lineTo(sz*.28,sz*.28); ctx.lineTo(sz*.58,sz*.6); ctx.fill();
-    ctx.fillStyle='#3a6032'; ctx.beginPath(); ctx.moveTo(sz*.38,sz*.6); ctx.lineTo(sz*.72,sz*.22); ctx.lineTo(sz,sz*.52); ctx.lineTo(sz,sz*.6); ctx.fill();
-    ctx.fillStyle='#dde';
-    [[sz*.22,sz*.36,sz*.28,sz*.28,sz*.34,sz*.36],[sz*.66,sz*.3,sz*.72,sz*.22,sz*.78,sz*.3]].forEach(function(pts){
-      ctx.beginPath(); ctx.moveTo(pts[0],pts[1]); ctx.lineTo(pts[2],pts[3]); ctx.lineTo(pts[4],pts[5]); ctx.fill();
-    });
-    ctx.fillStyle='#7aba5e'; ctx.fillRect(0,sz*.6,sz,sz*.4);
-    ctx.fillStyle='rgba(255,255,255,.8)';
-    [[sz*.18,sz*.12,14],[sz*.26,sz*.1,18],[sz*.12,sz*.14,10]].forEach(function(cl){
-      ctx.beginPath(); ctx.arc(cl[0],cl[1],cl[2],0,Math.PI*2); ctx.fill();
-    });
-  }
-  processDataURL(cv.toDataURL());
-}
-
-window.addEventListener('resize', function(){ if(svd) drawSpectrum(); });
+// Wire up variance button + live input
+document.getElementById('btnVariance').addEventListener('click', calcVariance);
+document.getElementById('sigmaInput').addEventListener('input', calcVariance);
+calcVariance();
 </script>
 </body>
 </html>
